@@ -1,0 +1,150 @@
+
+DROP TABLE IF EXISTS prefecture;
+CREATE TABLE prefecture	(
+prefecture_id	INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+prefecture_name	VARCHAR(20)	NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+insert into prefecture values(
+1,'北海道'
+);
+insert into prefecture values(
+2,'青森県'
+);
+insert into prefecture values(
+3,'岩手県'
+);
+insert into prefecture values(
+4,'宮城県'
+);
+insert into prefecture values(
+5,'秋田県'
+);
+insert into prefecture values(
+6,'山形県'
+);
+insert into prefecture values(
+7,'福島県'
+);
+insert into prefecture values(
+8,'茨城県'
+);
+insert into prefecture values(
+9,'栃木県'
+);
+insert into prefecture values(
+10,'群馬県'
+);
+insert into prefecture values(
+11,'埼玉県'
+);
+insert into prefecture values(
+12,'千葉県'
+);
+insert into prefecture values(
+13,'東京都'
+);
+insert into prefecture values(
+14,'神奈川県'
+);
+insert into prefecture values(
+15,'新潟県'
+);
+insert into prefecture values(
+16,'富山県'
+);
+insert into prefecture values(
+17,'石川県'
+);
+insert into prefecture values(
+18,'福井県'
+);
+insert into prefecture values(
+19,'山梨県'
+);
+insert into prefecture values(
+20,'長野県'
+);
+insert into prefecture values(
+21,'岐阜県'
+);
+insert into prefecture values(
+22,'静岡県'
+);
+insert into prefecture values(
+23,'愛知県'
+);
+insert into prefecture values(
+24,'三重県'
+);
+insert into prefecture values(
+25,'滋賀県'
+);
+insert into prefecture values(
+26,'京都府'
+);
+insert into prefecture values(
+27,'大阪府'
+);
+insert into prefecture values(
+28,'兵庫県'
+);
+insert into prefecture values(
+29,'奈良県'
+);
+insert into prefecture values(
+30,'和歌山県'
+);
+insert into prefecture values(
+31,'鳥取県'
+);
+insert into prefecture values(
+32,'島根県'
+);
+insert into prefecture values(
+33,'岡山県'
+);
+insert into prefecture values(
+34,'広島県'
+);
+insert into prefecture values(
+35,'山口県'
+);
+insert into prefecture values(
+36,'徳島県'
+);
+insert into prefecture values(
+37,'香川県'
+);
+insert into prefecture values(
+38,'愛媛県'
+);
+insert into prefecture values(
+39,'高知県'
+);
+insert into prefecture values(
+40,'福岡県'
+);
+insert into prefecture values(
+41,'佐賀県'
+);
+insert into prefecture values(
+42,'長崎県'
+);
+insert into prefecture values(
+43,'熊本県'
+);
+insert into prefecture values(
+44,'大分県'
+);
+insert into prefecture values(
+45,'宮崎県'
+);
+insert into prefecture values(
+46,'鹿児島県'
+);
+insert into prefecture values(
+47,'沖縄県'
+);
+
+
