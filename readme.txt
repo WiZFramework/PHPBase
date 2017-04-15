@@ -21,7 +21,7 @@ https://opensource.org/licenses/mit-license.php
 
 １、「sources」ディレクトリは「PHPソース」になります。「sql」ディレクトリには、MySQL用の「都道府県テーブル」作成用のSQL文のテキストが入ってます「mysql_prefecture_sql.txt」です。
 　まず、phpMyAdminもしくは、コマンドラインから「mysql_prefecture_sql.txt」内のSQL文を実行してください。
-２、次に「sources/config.php」内の「DB接続用の定数」を各環境に合わせて設定して下さい。定数の意味するところは以下の通り。
+２、次に「sources/common/config.php」内の「DB接続用の定数」を各環境に合わせて設定して下さい。定数の意味するところは以下の通り。
 //MySQLの場合のキャラ設定にSET NAMESを使用するかどうか
 define('DB_MYSQL_SET_NAMES','1');
 //ホスト(ローカルの場合は'localhost'と記述)
