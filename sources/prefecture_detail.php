@@ -77,7 +77,6 @@ if(isset($_POST['func'])){
 else{
 	if($prefecture_id > 0){
 		if(($_POST = $prefecture_obj->get_tgt(false,$prefecture_id)) === false){
-			$site_member_id = 0;
 			$_POST['func'] = 'new';
 		}
 		else{
@@ -128,10 +127,9 @@ END_BLOCK;
 //--------------------------------------------------------------------------------------
 function paramchk(){
 	global $err_array;
-	global $prefecture_id;
 	$retflg = true;
 	/// 都道府県名の存在と空白チェック
-	if(ccontentsutil::chkset_err_field('prefecture_name','都道府県名','isset_nl')){
+	if(ccontentsutil::chkset_err_field($err_array,'prefecture_name','都道府県名','isset_nl')){
 		$retflg = false;
 	}
 	return $retflg;

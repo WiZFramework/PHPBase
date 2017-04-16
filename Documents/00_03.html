@@ -1,0 +1,299 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>０．セットアップと最初のサンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>００３．詳細ページの記述方法</h3>
+　ここでは、<strong>sources/prefecture_detail.php</strong>について説明します。<br />
+<br />
+<h4>詳細ページの機能</h4>
+　ページの最上部に<strong>ライブラリのインクルード</strong>が前項のようにありますので、それがまず記述されます。<br />
+　そして<strong>詳細ページ</strong>の機能は以下のようになります。<br />
+<div class="box1">
+<pre>
+１、一覧ページに戻ることができる
+２、都道府県名を修正できる（確認画面つき）
+３、都道府県を新規で追加できる（確認画面つき）
+</pre>
+</div>
+　では個別に見ていきます。<br />
+<br />
+<h4>１、一覧ページに戻ることができる</h4>
+　これは単純に<strong>prefecture_list</strong>へのリンクを記述すればいいのかというと、そうでもありません。一覧ページからのリンクは<strong>ページ情報</strong>が含まれますので、そのページに戻ったほうが、直感的に扱いやすいでしょう。<br />
+　<strong>prefecture_detail.php</strong>の<strong>実行ブロック</strong>に、
+<div class="box1">
+<pre>
+$page = 0;
+if(isset($_GET['page']) 
+    && cutil::is_number($_GET['page'])
+    && $_GET['page'] > 0){
+    $page = $_GET['page'];
+}
+</pre>
+</div>
+　と記述があります。これは<strong>ページ情報があれば$pageに設置</strong>ということです。この変数は<strong>一覧に戻る</strong>のリンクに使用します。<br />
+　<strong>一覧に戻る</strong>リンクはHTMLブロックに以下のように記述されています。
+<div class="box1">
+<pre>
+&lt;a href="prefecture_list.php&lt;?php echo_page(); ?>">一覧に戻る&lt;/a>
+</pre>
+</div>
+　GETパラメータに<strong>&lt;?php echo_page(); ?></strong>が記述されています。この関数は
+<div class="box1">
+<pre>
+function echo_page(){
+    global $page;
+    if($page > 0){
+        echo '?page=' . $page;
+    }
+}
+</pre>
+</div>
+　となっていて、もとの一覧ページに戻れるようになっています。<br />
+<br />
+<h4>２、都道府県名を修正できる（確認画面つき）</h4>
+　これは<strong>GET/POST引数で都道府県IDが指定された場合</strong>の処理になります。<br />
+　まず、実行ブロックで
+<div class="box1">
+<pre>
+$prefecture_id = 0;
+//中略
+if(isset($_GET['pid']) 
+//cutilクラスのメンバ関数をスタティック呼出
+    && cutil::is_number($_GET['pid'])
+    && $_GET['pid'] > 0){
+    $prefecture_id = $_GET['pid'];
+}
+//$_POST優先
+if(isset($_POST['prefecture_id']) 
+//cutilクラスのメンバ関数をスタティック呼出
+    && cutil::is_number($_POST['prefecture_id'])
+    && $_POST['prefecture_id'] > 0){
+    $prefecture_id = $_POST['prefecture_id'];
+}
+</pre>
+</div>
+　これで<strong>$prefecture_id</strong>には<strong>新規</strong>の場合は<strong>0</strong>が、それ以外は<strong>都道府県ID</strong>が代入されます。<br />
+<br />
+　さて<strong>詳細ページ</strong>は<strong>状態</strong>というパラメータを持っています。<strong>$_POST['func']</strong>に代入される値ですが、<strong>確認画面</strong>の場合は<strong>'conf'</strong>です。<strong>追加/更新</strong>の場合は<strong>'set'</strong>です。<strong>新規</strong>は<strong>'new'</strong>になり、<strong>編集</strong>は<strong>'edit'</strong>です。<br />
+　これらを<strong>$_POST['func']</strong>が<strong>渡されたかどうか</strong>を判断して、<strong>状態</strong>を決定します。<br />
+　実行ブロックではその振り分けを行います。以下のコードです。
+<div class="box1">
+<pre>
+if(isset($_POST['func'])){
+    switch($_POST['func']){
+        case 'set':
+            if(!paramchk()){
+                $_POST['func'] = 'edit';
+                $err_flag = 1;
+            }
+            else{
+                regist();
+                //regist()内でリダイレクトするので
+                //ここまで実行されればリダイレクト失敗
+                $_POST['func'] = 'edit';
+                //システムに問題のあるエラー
+                $err_flag = 2;
+            }
+        case 'conf':
+            if(!paramchk()){
+                $_POST['func'] = 'edit';
+                $err_flag = 1;
+            }
+        break;
+        case 'edit':
+            //戻るボタン。
+        break;
+        default:
+            //通常はありえない
+            echo '原因不明のエラーです。';
+            exit;
+        break;
+    }
+}
+else{
+    if($prefecture_id > 0){
+        if(($_POST = $prefecture_obj->get_tgt(false,$prefecture_id)) === false){
+            $_POST['func'] = 'new';
+        }
+        else{
+            $_POST['func'] = 'edit';
+        }
+    }
+    else{
+        //新規の入力フォーム
+        $_POST['func'] = 'new';
+    }
+}
+</pre>
+</div>
+　コードを追いかけていくとわかりますが、まず<strong>$_POST['func']</strong>が渡された場合は<strong>パラメータのチェック</strong>を行います。<br />
+　<strong>パラメータのチェック</strong>が必要なのは<strong>確認画面</strong>もしくは<strong>追加/更新</strong>の時です。以下の関数を呼び出します。
+<div class="box1">
+<pre>
+function paramchk(){
+    global $err_array;
+    $retflg = true;
+    /// 都道府県名の存在と空白チェック
+    if(ccontentsutil::chkset_err_field($err_array,'prefecture_name','都道府県名','isset_nl')){
+        $retflg = false;
+    }
+    return $retflg;
+}
+</pre>
+</div>
+　ここで呼び出している<strong>ccontentsutil::chkset_err_field()関数</strong>はエラーチェック用のユーティリティ関数です<strong>common/contents_func.php</strong>に記述があります。<br />
+　この最後の引数<strong>'isset_nl'</strong>というのは<strong>存在と空白のチェック</strong>です。<strong>ccontentsutil::chkset_err_field()関数</strong>はこのパラメータによって<strong>どういうエラーチェックを行うか</strong>を決めます。<strong>'isset_nl'</strong>で<strong>ccontentsutil::chkset_err_field()関数</strong>を呼び出した場合、以下のコードが実行されます。
+<div class="box1">
+<pre>
+            case 'isset_nl':
+                //存在と空白チェック
+                if(!isset($_POST[$name])){
+                    $err_array[$name] = "<strong>{$field}</strong>が見つかりません";
+                    return true;
+                }
+                elseif($_POST[$name] == '' ){
+                    $err_array[$name] = "<strong>{$field}</strong>は必須項目です";
+                    return true;
+                }
+            break;
+</pre>
+</div>
+　つまり<strong>$err_array配列</strong>にエラー内容をセットします。エラーの表示を修正する場合は<strong>common/contents_func.php</strong>の<strong>ccontentsutil::chkset_err_field()関数</strong>を直接修正してください。このファイルは<strong>ユーティリティ的な</strong>関数が記述されてますが、<strong>common/function.php</strong>とは違って、<strong>ライブラリの一部</strong>という意味合いは弱いファイルとなっています。<br />
+　さて、IDが指定された場合の<strong>データの読み込み</strong>ですが、
+<div class="box1">
+<pre>
+//都道府県クラスを構築
+$prefecture_obj = new cprefecture();
+</pre>
+</div>
+　と<strong>cprefectureクラス</strong>のインスタンスを構築し
+<div class="box1">
+<pre>
+    if($prefecture_id > 0){
+        if(($_POST = $prefecture_obj->get_tgt(false,$prefecture_id)) === false){
+            $_POST['func'] = 'new';
+        }
+        else{
+            $_POST['func'] = 'edit';
+        }
+    }
+</pre>
+</div>
+　と読み込んでいます。この処理はどういう処理かというと<strong>$_POST変数</strong>の直接読み込んでいます。<br />
+　<strong>$_POST変数</strong>は特殊なグローバル変数ですが、<strong>読み込みオンリー</strong>というわけではありません。ですから配列内に値をセットすることも可能です。<br />
+　このような形にすることで<strong>DBから読んだ場合</strong>と<strong>ユーザーがPOSTした場合</strong>を同じように扱えることになります。<br />
+　そして、各コントロール（ここでは<strong>都道府県のフィールド</strong>です）は
+<div class="box1">
+<pre>
+function echo_prefecture_name(){
+    global $err_array;
+    if(!isset($_POST['prefecture_name']))$_POST['prefecture_name'] = '';
+    <span class="red">$tgt = new ctextbox('prefecture_name',$_POST['prefecture_name'],'size="70"');
+    $tgt->show($_POST['func'] == 'conf');</span>
+    if(isset($err_array['prefecture_name'])){
+        echo '&lt;br />&lt;span class="red">' 
+        . cutil::ret2br($err_array['prefecture_name']) 
+        . '&lt;/span>';
+    }
+}
+</pre>
+</div>
+　のように記述します。ここで出てくる<strong>ctextbox</strong>はページャー同様<strong>common/controls.php</strong>に記述がある<strong>inputクラス</strong>です。このクラスは<strong>入力状態</strong>と<strong>確認状態</strong>を表示することができます。<strong>show()メンバ関数</strong>に<strong>true</strong>を渡すと<strong>確認状態</strong>、<strong>false</strong>を渡すと入力状態、になります。
+<div class="box1">
+<pre>
+    $tgt->show($_POST['func'] == 'conf');
+</pre>
+</div>
+　と記述されていますので、<strong>$_POST['func'] が'conf'の時はtrue</strong>という意味になります。<br />
+<br />
+　また<strong>入力状態</strong>と<strong>確認状態</strong>の違いは<strong>操作ボタン</strong>にもあります。
+<div class="box1">
+<pre>
+function echo_switch(){
+    global $prefecture_id;
+    if($_POST['func'] == 'conf'){
+        $button = '更新';
+        if($prefecture_id &lt;= 0){
+            $button = '追加';
+        }
+        $str =&lt;&lt;&lt;END_BLOCK
+&lt;input type="button"  value="戻る" onClick="javascript:set_func_form('edit','')"/>&nbsp;
+&lt;input type="button"  value="{$button}" onClick="javascript:set_func_form('set','')"/>
+END_BLOCK;
+    }
+    else{
+        $str =&lt;&lt;&lt;END_BLOCK
+&lt;input type="button"  value="確認" onClick="javascript:set_func_form('conf','')"/>
+END_BLOCK;
+    }
+    echo $str;
+}
+</pre>
+</div>
+　この関数は<strong>入力状態</strong>と<strong>確認状態</strong>で表示を振り分けています。<br />
+<br />
+　最後に更新処理ですが<strong>regist()関数</strong>を使います。
+<div class="box1">
+<pre>
+function regist(){
+    global $prefecture_id;
+    <span class="red">$dataarr = array();
+    $dataarr['prefecture_name'] = (string)$_POST['prefecture_name'];
+    $chenge = new cchange_ex();</span>
+    if($prefecture_id > 0){
+        $chenge->update('prefecture',$dataarr,'prefecture_id=' . $prefecture_id);
+        cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $prefecture_id);
+    }
+    else{
+        $pid = $chenge->insert('prefecture',$dataarr);
+        cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $pid);
+    }
+}
+</pre>
+</div>
+　まず、赤くなっているところに注目してください。<strong>cchange_exクラス</strong>のインスタンスを構築しています。このクラスは一覧表示のところの<strong>削除</strong>のところでも紹介しました。<strong>updateやinsert</strong>もこの関数を使います。<br />
+　使い方ですが、
+<div class="box1">
+<pre>
+    $dataarr['prefecture_name'] = (string)$_POST['prefecture_name'];
+</pre>
+</div>
+　のように連想配列を作って、<strong>updateやinsert関数</strong>に渡します。この配列は<strong>$arr['フィールド名'] = 値</strong>となる連想配列です。この例では<strong>'prefecture_name'</strong>フィールドだけですが、通常はもっとたくさんのフィールドを修正、追加します。<br />
+　そんな場合は
+<div class="box1">
+<pre>
+    $dataarr['hoge'] = (string)$_POST['huga'];
+    $dataarr['hogehoge'] = (int)$_POST['hogehoge'];
+</pre>
+</div>
+　のようにします<strong>(string)や(int)</strong>は必要です。この関数は内部で<strong>値の型</strong>を知らべて、形に合ったSQL文を作成します。特に、番号は必ず<strong>(int)</strong>を付けましょう。<br />
+<br />
+<h4>３、都道府県を新規で追加できる（確認画面つき）</h4>
+　追加処理は<strong>更新処理</strong>とほとんど変わりません。<strong>regist()関数</strong>で<strong>idが0の場合</strong>は<strong>cchange_ex::insert()関数</strong>を読んでいます。
+
+
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="00_02.html">前へ</a></li>
+<li><a href="index.html">目次</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>

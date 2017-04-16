@@ -115,6 +115,7 @@ class ccontentsutil  {
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief	$_PSOT入力エラーをチェックし、エラー配列にセット
+	@param[in]	$err_array エラー配列
 	@param[in]	$name POST変数名
 	@param[in]	$field ユーザーにわかる変数名
 	@param[in]	$chkid チェック方法
@@ -123,8 +124,7 @@ class ccontentsutil  {
 	@return	フォーマットにあってなければtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	public static function chkset_err_field($name,$field,$chkid,$para1='',$para2=''){
-		global $err_array;
+	public static function chkset_err_field(&$err_array,$name,$field,$chkid,$para1='',$para2=''){
 		switch($chkid){
 			case 'isset':
 				//存在チェックのみ

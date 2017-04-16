@@ -1,0 +1,270 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>０．セットアップと最初のサンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>００２．一覧ページの記述方法</h3>
+　ここでは、<strong>上層PHP</strong>である<strong>sources/prefecture_list.php</strong>について説明します。<br />
+　ただ、<strong>上層PHP</strong>はデザインやPOSTする具体的な方法などが記述されます。これらは、各サイトによっても考え方も違うでしょうし、JQueryやJavaScriptの使用状況によっても記述が変わってくると思います。<br />
+　ですので、上層ページにおける<strong>コンテンツDBクラスのメンバ関数呼び出し</strong>を中心に説明したいと思います。<br />
+<br />
+<h4>一覧ページの機能</h4>
+　前々項で動作チェックしたように、<strong>都道府県一覧</strong>には以下の機能があります。
+<div class="box1">
+<pre>
+１、ページ分けされた一覧表示
+２、各項目の削除
+３、詳細ページへのリンク
+４、新規の形での詳細ページへのリンク
+</pre>
+</div>
+　この項では、それぞれの機能ごとに説明したいと思います。<strong>sources/prefecture_list.php</strong>を開いてください。<br />
+　まず、phpブロックの最初に
+<div class="box1">
+<pre>
+//ライブラリをインクルード
+require_once("inc_base.php");
+require_once($CMS_COMMON_INCLUDE_DIR . "libs.php");
+</pre>
+</div>
+　という2行があります。これは<strong>PHPBaseライブラリ</strong>のインクルード（require_once()関数を使用してます）です。<br />
+　まず、<strong>inc_base.php</strong>が呼ばれてます。これは<strong>sources/inc_base.php</strong>を差し、以下のような内容になってます。
+<div class="box1">
+<pre>
+&lt;?php
+$CMS_COMMON_INCLUDE_DIR = "common/";
+?>
+</pre>
+</div>
+　このファイルには<strong>commonディレクトリへの相対パス</strong>を記述します。<strong>PHPBase本体</strong>は<strong>commonディレクトリ内</strong>にあります。しかし、各ページは、ディレクトリ階層化されていて記述されることも多々あります。<br />
+　そのため、各ディレクトリに<strong>inc_base.php</strong>というファイルを置き、<strong>そのディレクトリからcommonディレクトリへの相対パス</strong>を記述しておくのです。こうすると、各ページのPHPがディレクトリを移動することになっても、移動先のディレクトリに<strong>inc_base.php</strong>があれば、<strong>commonディレクトリ</strong>は参照できる形になります。<br />
+　<strong>inc_base.php</strong>では<strong>$CMS_COMMON_INCLUDE_DIR</strong>が定義されますので、require_onceの2行目では、そのパス内の<strong>libs.php</strong>を呼び出しています。以下が<strong>common/libs.php</strong>の内容です。
+<div class="box1">
+<pre>
+&lt;?php
+//ユーティリティクラス他
+require_once("function.php");
+//コントロールクラス他
+require_once("controls.php");
+//コントロールクラスエクストラ（オプション）
+require_once("controls_ex.php");
+//他ユーティリティ
+require_once("contents_func.php");
+//このコンテンツ独自の
+//DBの継承クラスの定義
+<span class="red">require_once("contents_db.php");</span>
+?>
+</pre>
+</div>
+　ここでは<strong>PHPBaseライブラリ</strong>を初期化するphpが、すべて呼ばれています。赤くなっている部分は、<strong>コンテンツDB</strong>のPHPファイル（すなわち<strong>contents_db.php</strong>）が呼ばれています。<br />
+　サイトによってはテーブルが多数になる場合もあります。そのような場合は<strong>contents_db.php</strong>だけでは<strong>コンテンツDBクラス</strong>を記述しきれません。そんな場合はphpファイルを分け<strong>contents_db2.php</strong>などを<strong>commonディレクトリ内</strong>に作成してそこに記述するといいでしょう。その場合は<strong>libs.php</strong>にそのファイルを追記するのを忘れすに。<br />
+<br />
+<h4>１、ページ分けされた一覧表示</h4>
+　まず、<strong>ページ分け</strong>ですが、<strong>ページ分け</strong>に必要な情報は、<strong>1ページ何行表示するか</strong>、<strong>現在何ページ目を表示しているか</strong>、<strong>レコードの総数</strong>です。<br />
+　これらの情報があれば<strong>ページ分け</strong>されたページを作成できます。<br />
+　<strong>1ページ何行表示するか</strong>は33付近に定義されていて、
+<div class="box1">
+<pre>
+//1ページのリミット
+$limit = 20;
+</pre>
+</div>
+　となっています。<strong>何ページ目を表示しているか</strong>は<strong>$page = 1;</strong>とデフォルト（1ページ目）を設定した後、<strong>$_GET['page']</strong>が設定されていたら、そのページにします。<br />
+　<strong>レコードの総数</strong>は後ほど紹介するとして、まず、<strong>該当ページのデータ読み込み</strong>ですが<strong>readdata()関数</strong>に記述があります。
+<div class="box1">
+<pre>
+function readdata(){
+    global $limit;
+    global $rows;
+    global $order;
+    global $page;
+    <span class="red">$obj = new cprefecture();
+    $from = ($page - 1) * $limit;
+    $rows = $obj->get_all(false,$from,$limit);</span>
+}
+</pre>
+</div>
+　ここで、赤くなっている部分で、前項で記述した<strong>cprefectureクラス</strong>のインスタンスを<strong>$obj</strong>に構築しています。<br />
+　そして、<strong>$from</strong>を<strong>$pageと$limitから割り出し</strong>、<strong>$obj->get_all()関数呼び出し</strong>で<strong>$row</strong>に代入しています。<br />
+　<strong>$row</strong>はグローバル変数ですので、ほか関数等からもアクセスできる形になります。<br />
+　<strong>$row</strong>を使ってHTMLを作成しているのが<strong>echo_prefecture_list()関数</strong>です
+<div class="box1">
+<pre>
+function echo_prefecture_list(){
+    global $rows;
+    global $page;
+    $retstr = '';
+    $urlparam = '&page=' . $page;
+    $rowscount = 1;
+    if(count($rows) > 0){
+        foreach($rows as $key => $value){
+        $javamsg =  '【' . $rows[$key]['prefecture_name'] . '】';
+        $nobottom = '';
+        if($rowscount == count($rows)){
+            $nobottom = ' nobottom';
+        }
+        $str =&lt;&lt;&lt;END_BLOCK
+//中略
+END_BLOCK;
+        $retstr .= $str;
+        $rowscount++;
+        }
+    }
+    else{
+        $retstr =&lt;&lt;&lt;END_BLOCK
+//中略
+END_BLOCK;
+    }
+    echo $retstr;
+}
+</pre>
+</div>
+　中略になってますが<strong>ヒアドキュメント</strong>を使いながら<strong>&lt;tr>タグや&lt;td>タグ</strong>を作成しています。<br/>
+　そして、この<strong>echo_prefecture_list()関数</strong>を呼び出しているのが、下方の<strong>HTMLエリア</strong>にある
+<div class="box1">
+<pre>
+&lt;table>
+&lt;tr>
+&lt;th>都道府県ID&lt;/th>
+&lt;th>都道府県名&lt;/th>
+&lt;th>操作&lt;/th>
+&lt;/tr>
+<span class="red">&lt;?php echo_prefecture_list(); ?></span>
+&lt;/table>
+</pre>
+</div>
+　の部分です。<strong>&lt;table>タグ</strong>で挟んでいます。<br />
+<br />
+　さて<strong>ページ分け</strong>の部分ですが<strong>ページのリンク</strong>を作成します。これを作成しているのが<strong>echo_page_block()関数</strong>です。
+<div class="box1">
+<pre>
+function echo_page_block(){
+    global $limit;
+    global $page;
+    $retstr = '';
+    $obj = new cprefecture();
+    $allcount = $obj->get_all_count(false);
+    <span class="red">$ctl = new cpager($_SERVER['PHP_SELF'],$allcount,$limit);
+    $ctl->show('page',$page);</span>
+}
+</pre>
+</div>
+　<strong>$limit</strong>と<strong>$page</strong>はグローバル変数を参照しています。そして<strong>レコード総数</strong>ですが、これは<strong>cprefectureのインスタンス</strong>を<strong>$obj</strong>に作成し、メンバ変数<strong>get_all_count()関数</strong>を呼び出します。<br />
+　そのあとの赤くなっている部分ですが、ページへのリンクを<strong>ページャー</strong>と称しています。<strong>ページャー</strong>は<strong>cpagerクラス</strong>というクラスで簡単に作成できます。<br />
+　<strong>cpagerクラス</strong>は<strong>common/controls.php</strong>に記述されています。内容は説明しませんので各自読んでください。<br />
+　<strong>cpagerクラス</strong>はコンストラクタで<strong>基準のURL</strong>と<strong>レコード総数</strong>と<strong>1ページ当たりの行数</strong>を渡します。<br />
+　その後<strong>show()メンバ関数</strong>を呼び出せばそこに表示されます。<br />
+　<strong>show()メンバ関数</strong>に渡す<strong>'page',$page</strong>という引数は、<strong>$_GET</strong>で<strong>ページ</strong>を表す変数名とその値です。<br />
+　このページでは<strong>http://www.hoge.huga/sources/prefecture_list.php?<span class="red">page=3</span></strong>のようにアクセスすると<strong>3ページ目</strong>にアクセスできます。<strong>'pg',$page</strong>のように記述すると<strong>http://www.hoge.huga/sources/prefecture_list.php?<span class="red">pg=3</span></strong>が<strong>3ページ目</strong>を意味することになります。<br/>
+<br />
+<h4>２、各項目の削除</h4>
+　項目の削除は<strong>JavaScript</strong>による記述と、<strong>PHPによる削除</strong>の両方で実装します。<br/>
+　まず<strong>JavaScript</strong>ですが、HTMLブロックの<strong>&lt;head>タグ</strong>内に
+<div class="box1">
+<pre>
+function del_func_form(pm,mess){
+    var message = "本当に\r\n";
+    message += mess;
+    message += "\r\nを削除しますか？";
+    if(confirm(message)){
+        document.form1.target = "_self";
+        document.form1.func.value = 'del';
+        document.form1.param.value = pm;
+        document.form1.submit();
+    }
+}
+</pre>
+</div>
+　と記述します。この関数のパラメータに渡されるのは<strong>pm</strong>が削除するID、<strong>mess</strong>が都道府県名を<strong>【　】</strong>で強調した文字列です。<br />
+　PHPについては、上記紹介した<strong>echo_prefecture_list()関数</strong>のヒアドキュメント内の1行分の記述に
+<div class="box1">
+<pre>
+        $str =&lt;&lt;&lt;END_BLOCK
+&lt;tr>
+&lt;td width="20%" class="center{$nobottom}">
+{$rows[$key]['prefecture_id']}
+&lt;/td>
+&lt;td width="65%" class="center{$nobottom}">
+&lt;a href="prefecture_detail.php?pid={$rows[$key]['prefecture_id']}{$urlparam}">
+    {$rows[$key]['prefecture_name']}&lt;/a>
+&lt;/td>
+&lt;td width="15%" class="center{$nobottom}">
+<span class="red">&lt;input type="button" value="削除確認" 
+    onClick="javascript:del_func_form({$rows[$key]['prefecture_id']},'{$javamsg}')" /></span>
+&lt;/td>
+&lt;/tr>
+END_BLOCK;
+</pre>
+</div>
+　の赤くなっているところのように記述します。（このドキュメントの表示領域の関係で必要のない改行が入ってますが、ソースを確認ください）。なおあらかじめ<strong>$javamsg</strong>に装飾した都道府県名を代入しておきます。<br />
+<br />
+　実際の削除処理はPHPの<strong>deljob()関数</strong>で行います。
+<div class="box1">
+<pre>
+function deljob(){
+    $chenge = new cchange_ex();
+    if($_POST['param'] > 0){
+        $chenge->delete("prefecture","prefecture_id=" . $_POST['param']);
+    }
+}
+</pre>
+</div>
+　このように<strong>cchange_exクラス</strong>のインスタンスを構築し、<strong>$chenge->delete()関数</strong>を呼び出します。引数は<strong>テーブル名、条件</strong>になります。<br />
+　<strong>cchange_exクラス</strong>は<strong>SELECT文</strong>のように派生クラスを作成する必要はありません。このように直接操作します。<br />
+<strong>cchange_exクラス</strong>では、このほかに<strong>insertとupdate</strong>を行うことができます。<br />
+<br />
+<h4>３、詳細ページへのリンク</h4>
+　こちらも<strong>削除</strong>同様、ヒアドキュメント内の1行分の部分に記述します。
+<div class="box1">
+<pre>
+        $str =&lt;&lt;&lt;END_BLOCK
+&lt;tr>
+&lt;td width="20%" class="center{$nobottom}">
+{$rows[$key]['prefecture_id']}
+&lt;/td>
+&lt;td width="65%" class="center{$nobottom}">
+<span class="red">&lt;a href="prefecture_detail.php?pid={$rows[$key]['prefecture_id']}{$urlparam}">
+    {$rows[$key]['prefecture_name']}&lt;/a></span>
+&lt;/td>
+&lt;td width="15%" class="center{$nobottom}">
+&lt;input type="button" value="削除確認" 
+    onClick="javascript:del_func_form({$rows[$key]['prefecture_id']},'{$javamsg}')" />
+&lt;/td>
+&lt;/tr>
+END_BLOCK;
+</pre>
+</div>
+<br />
+<h4>４、新規の形での詳細ページへのリンク</h4>
+　こちらはHTMLブロックにリンクを記述します。
+<div class="box1">
+<pre>
+&lt;p>&lt;a href="prefecture_detail.php">新規&lt;/a>&lt;/p>
+</pre>
+</div>
+　詳細ページである<strong>prefecture_detail.php</strong>はGET引数無しで呼び出すと<strong>新規</strong>の状態を表示します。<br />
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="00_01.html">前へ</a></li>
+<li><a href="index.html">目次</a></li>
+<li><a href="00_03.html">次へ</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>
