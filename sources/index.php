@@ -27,7 +27,10 @@ require_once($CMS_COMMON_INCLUDE_DIR . "libs.php");
 <br />
 <table >
 <tr>
-<td class="nobottom"><a href="prefecture_list.php">都道府県管理</a></td>
+<td ><a href="prefecture_list.php">都道府県管理</a></td>
+</tr>
+<tr>
+<td class="nobottom"><a href="member_list.php">メンバー管理</a></td>
 </tr>
 </table>
 <p>&nbsp;</p>

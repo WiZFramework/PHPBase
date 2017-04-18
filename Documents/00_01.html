@@ -43,21 +43,20 @@ class cprefecture extends crecord {
     */
     //--------------------------------------------------------------------------------------
     public function get_all_count($debug){
-        $arr = array();
         //親クラスのselect()メンバ関数を呼ぶ
         $this->select(
             $debug,                 //デバッグ文字を出力するかどうか
             "count(*)",             //取得するカラム
             "prefecture",           //取得するテーブル
-            "1",                    //条件
-            "prefecture_id asc"     //順番
+            "1"                 //条件
         );
-        //順次取り出す
-        while($row = $this->fetch_assoc()){
-            $arr[] = $row;
+        if($row = $this->fetch_assoc()){
+            //取得した個数を返す
+            return $row['count(*)'];
         }
-        //取得した個数を返す
-        return $arr[0]['count(*)'];
+        else{
+            return 0;
+        }
     }
     //--------------------------------------------------------------------------------------
     /*!
@@ -88,9 +87,9 @@ class cprefecture extends crecord {
     }
     //--------------------------------------------------------------------------------------
     /*!
-    @brief  指定された範囲の配列を得る
+    @brief  指定されたIDの配列を得る
     @param[in]  $debug  デバッグ出力をするかどうか
-    @param[in]  $id     都道府県ID
+    @param[in]  $id     ID
     @return 配列（1次元配列になる）空の場合はfalse
     */
     //--------------------------------------------------------------------------------------
@@ -140,21 +139,20 @@ class cprefecture extends crecord {
     */
     //--------------------------------------------------------------------------------------
     public function get_all_count($debug){
-        $arr = array();
         //親クラスのselect()メンバ関数を呼ぶ
         $this->select(
             $debug,                 //デバッグ文字を出力するかどうか
             "count(*)",             //取得するカラム
             "prefecture",           //取得するテーブル
-            "1",                    //条件
-            "prefecture_id asc"     //順番
+            "1"                 //条件
         );
-        //順次取り出す
-        while($row = $this->fetch_assoc()){
-            $arr[] = $row;
+        if($row = $this->fetch_assoc()){
+            //取得した個数を返す
+            return $row['count(*)'];
         }
-        //取得した個数を返す
-        return $arr[0]['count(*)'];
+        else{
+            return 0;
+        }
     }
 </pre>
 </div>
@@ -269,21 +267,18 @@ prefecture_id asc
 　このように<strong>$this->select(...);</strong>を実行することによりSQL文が発行されます。正常にリソースが取得できると、
 <div class="box1">
 <pre>
-        //順次取り出す
-        while($row = $this->fetch_assoc()){
-            $arr[] = $row;
+        if($row = $this->fetch_assoc()){
+            //取得した個数を返す
+            return $row['count(*)'];
+        }
+        else{
+            return 0;
         }
 </pre>
 </div>
-　と<strong>$this->fetch_assoc()関数</strong>呼び出しで<strong>1行分の配列データ</strong>を取得します。この関数は、内部的には<strong>PDOStatement::fetch_assoc()関数</strong>を呼び出します。この関数は取得できない場合<strong>FALSE</strong>を返すのでループを抜けます。<br />
-　今回取り出すレコードは<strong>count(*)</strong>は戻される行数は1行で<strong>count(*)フィールド</strong>を持っているだけなので<strong>whileループ</strong>は記述しなくても問題ありません。ループを使用した場合、$arrは2次元配列になりますので、
-<div class="box1">
-<pre>
-        //取得した個数を返す
-        return $arr[0]['count(*)'];
-</pre>
-</div>
-　と返しています。ですから、<strong>cprefecture::get_all_count()関数</strong>の戻り値は<strong>行数</strong>になります。<br />
+　と<strong>$this->fetch_assoc()関数</strong>呼び出しで<strong>1行分の配列データ</strong>を取得します。この関数は、内部的には<strong>PDOStatement::fetch_assoc()関数</strong>を呼び出します。
+この関数は取得できない場合<strong>FALSE</strong>を返します。<br />
+　このように、<strong>cprefecture::get_all_count()関数</strong>の戻り値は<strong>行数</strong>になります。<br />
 <br />
 <h4>一覧表示用のメンバ関数</h4>
 　一覧表示に使用されるSELECT文は<strong>cprefecture::get_all()関数</strong>で実装します。<br />
