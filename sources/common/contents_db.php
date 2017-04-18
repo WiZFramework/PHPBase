@@ -128,20 +128,7 @@ class cfruits extends crecord {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_all_count($debug){
-		//親クラスのselect()メンバ関数を呼ぶ
-		$this->select(
-			$debug,					//デバッグ文字を出力するかどうか
-			"count(*)",				//取得するカラム
-			"fruits",			//取得するテーブル
-			"1"					//条件
-		);
-		if($row = $this->fetch_assoc()){
-			//取得した個数を返す
-			return $row['count(*)'];
-		}
-		else{
-			return 0;
-		}
+		return $this->get_all_count_core($debug,'fruits');
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -151,21 +138,7 @@ class cfruits extends crecord {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_all($debug){
-		$arr = array();
-		//親クラスのselect()メンバ関数を呼ぶ
-		$this->select(
-			$debug,			//デバッグ表示するかどうか
-			"*",			//取得するカラム
-			"fruits",	//取得するテーブル
-			"1",			//条件
-			"fruits_id asc"	//並び替え
-		);
-		//順次取り出す
-		while($row = $this->fetch_assoc()){
-			$arr[] = $row;
-		}
-		//取得した配列を返す
-		return $arr;
+		return $this->get_alltable_core($debug,'fruits','fruits_id');
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -176,19 +149,7 @@ class cfruits extends crecord {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt($debug,$id){
-		if(!cutil::is_number($id)
-		||  $id < 1){
-			//falseを返す
-			return false;
-		}
-		//親クラスのselect()メンバ関数を呼ぶ
-		$this->select(
-			$debug,			//デバッグ表示するかどうか
-			"*",			//取得するカラム
-			"fruits",	//取得するテーブル
-			"fruits_id=" . $id	//条件
-		);
-		return $this->fetch_assoc();
+		return $this->get_tgt_core($debug,$id,'fruits','fruits_id');
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -293,7 +254,7 @@ member.prefecture_id = prefecture.prefecture_id"	//条件
 	@brief	フルーツとのマッチする配列を得る
 	@param[in]	$debug	デバッグ出力をするかどうか
 	@param[in]	$id		ID
-	@return	配列（2次元配列になる）
+	@return	配列（1次元配列になる）
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_all_fruits_match($debug,$id){

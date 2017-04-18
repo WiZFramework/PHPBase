@@ -333,11 +333,8 @@ function echo_fruits_match_check(){
 	if(!isset($_POST['fruits']))$_POST['fruits'] = array();
 	foreach($fruits_rows as $key => $val){
 		$check = false;
-		foreach($_POST['fruits'] as $key2 => $val2){
-			if($val2 == $val['fruits_id']){
-				$check = true;
-				break;
-			}
+		if(array_search($val['fruits_id'],$_POST['fruits']) !== false){
+			$check = true;
 		}
 		$tgt->add($val['fruits_id'],$val['fruits_name'],$check);
 	}

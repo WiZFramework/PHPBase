@@ -289,6 +289,116 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
+	@brief  定型化されたget_all_count()関数（テーブルのすべての個数を得る）
+	@param[in]	$debug クエリを出力するかどうか
+	@param[in]	$table_name
+	@return 成功すればtrue
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all_count_core($debug,$table_name){
+		//select()メンバ関数を呼ぶ
+		if($this->select(
+			$debug,					//デバッグ文字を出力するかどうか
+			"count(*)",				//取得するカラム
+			"{$table_name}",			//取得するテーブル
+			"1"					//条件
+		)){
+			if($row = $this->fetch_assoc()){
+				//取得した個数を返す
+				return $row['count(*)'];
+			}
+			else{
+				return 0;
+			}
+		}
+		return 0;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  定型化されたget_all()関数（テーブルの指定範囲の一覧を得る）
+	@param[in]  $debug クエリを出力するかどうか
+	@param[in]	$from	抽出開始行
+	@param[in]	$limit	抽出数
+	@param[in]	$table_name テーブル名
+	@param[in]	$sort_id_name ソートするID名
+	@return	配列（2次元配列になる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all_core($debug,$from,$limit,$table_name,$sort_id_name){
+		$arr = array();
+		//select()メンバ関数を呼ぶ
+		if($this->select(
+			$debug,			//デバッグ表示するかどうか
+			"*",			//取得するカラム
+			"{$table_name}",	//取得するテーブル
+			"1",			//条件
+			"{$sort_id_name} asc",	//並び替え
+			"limit " . $from . "," . $limit		//抽出開始行と抽出数
+		)){
+			while($row = $this->fetch_assoc()){
+				$arr[] = $row;
+			}
+		}
+		//順次取り出す
+		//取得した配列を返す
+		return $arr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  定型化されたget_all()関数（テーブルのすべての一覧を得る）
+	@param[in]  $debug クエリを出力するかどうか
+	@param[in]	$table_name テーブル名
+	@param[in]	$sort_id_name ソートするID名
+	@return	配列（2次元配列になる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_alltable_core($debug,$table_name,$sort_id_name){
+		$arr = array();
+		//select()メンバ関数を呼ぶ
+		if($this->select(
+			$debug,			//デバッグ表示するかどうか
+			"*",			//取得するカラム
+			"{$table_name}",	//取得するテーブル
+			"1",			//条件
+			"{$sort_id_name} asc"	//並び替え
+		)){
+			while($row = $this->fetch_assoc()){
+				$arr[] = $row;
+			}
+		}
+		//順次取り出す
+		//取得した配列を返す
+		return $arr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	定型化されたget_tgt()関数。指定テーブルのIDの配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$id		ID
+	@param[in] 	$table_name テーブル名
+	@param[in]	$id_name 取得するID名
+	@return	配列（1次元配列になる）空の場合はfalse
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_tgt_core($debug,$id,$table_name,$id_name){
+		if(!cutil::is_number($id)
+		||  $id < 1){
+			//falseを返す
+			return false;
+		}
+		//select()メンバ関数を呼ぶ
+		if($this->select(
+			$debug,			//デバッグ表示するかどうか
+			"*",			//取得するカラム
+			"{$table_name}",	//取得するテーブル
+			"{$id_name}=" . $id	//条件
+		)){
+			return $this->fetch_assoc();
+		}
+		return false;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
 	@brief  デストラクタ
 	*/
 	//--------------------------------------------------------------------------------------

@@ -257,11 +257,9 @@ from
 prefecture
 where
 1
-prefecture_id asc
 </pre>
 </div>
 　となります。<strong>count(*)</strong>は、SQLの総数を返す内部コマンドです。<br />
-　数を数えるだけなので<strong>prefecture_id asc</strong>は本来は必要ないでしょう。スピードを重要視するならないほうがいいかと思います。<br/>
 <br />
 <h4>SELECT文を発行する</h4>
 　このように<strong>$this->select(...);</strong>を実行することによりSQL文が発行されます。正常にリソースが取得できると、
