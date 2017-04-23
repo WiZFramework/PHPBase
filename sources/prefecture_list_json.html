@@ -1,0 +1,94 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>都道府県一覧</title>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script>
+function read_phpdata(pageid){
+    $.ajax({
+        type: "GET",
+        url:  "prefecture_list_json.php",
+        data: "page=" + pageid.toString(),
+        dataType: "json",
+        
+        crossDomain: false,
+        scriptCharset: 'utf-8'
+    }).done(function(data){
+        // 成功
+        //ページブロックの書き出し
+        var PageStr = "";
+        var pagemax = Number(data.allcount)  / Number(data.limit);
+        if(Number(data.allcount) % Number(data.limit)){
+            pagemax++;
+        }
+        if(pagemax > 1){
+            for (var i = 1; i <= pagemax; i++){
+                if(i != 1){
+                    PageStr += ' > ';
+                }
+                if(i == Number(data.page)){
+                    PageStr += i.toString();
+                }
+                else{
+                PageStr += 
+                    '<a href=\"javascript:void(0);\" onClick=\"read_phpdata('
+                    + i.toString()
+                    + ');\" >'
+                    + i.toString()
+                    + '</a>';
+                }
+            }
+        }
+        $('#pageBlock').html(PageStr);
+
+        //一覧ブロックの書き出し
+        $('#dataTable').find("tr:gt(0)").remove();
+        for (var i = 0; i< data.rowdata.length; i++){
+            $('#dataTable').append(
+                    '<tr><td width="20%" class="center">' 
+                    + data.rowdata[i].prefecture_id
+                    + '</td><td width="80%" class="center">'
+                    + data.rowdata[i].prefecture_name 
+                    +'</td></tr>');
+        }
+    }).fail(function(jqXHR,textStatus, errorThrown){
+        // エラーの場合処理
+        $("#pageBlock").text("エラーが発生しました：" + jqXHR.status + ": " + errorThrown);
+    });
+}
+
+$(function(){
+    read_phpdata(1);
+});
+</script>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="headTitle">
+<h2>都道府県一覧(JSON版)</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="inquiry">
+<a href="index.php">メインメニュー</a>
+<p id="pageBlock"></p>
+<table id="dataTable">
+<tr>
+<th>都道府県ID</th>
+<th>都道府県名</th>
+</tr>
+</table>
+<form name="form1" action="prefecture_list_json.php" method="post" >
+<input type="hidden" name="func" value="" />
+<input type="hidden" name="param" value="" />
+</form>
+<p>&nbsp;</p>
+
+</div>
+<!-- /コンテンツ　-->
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>
+
