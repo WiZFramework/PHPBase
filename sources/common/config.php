@@ -2,7 +2,7 @@
 /*!
 @file config.php
 @brief DB接続変数と、エンコードの定義
-@copyright Copyright (c) 2017 Yamanoi Yasushi.
+@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
 */
 ////////////////////////////////////
 //実行ブロック

@@ -2,7 +2,7 @@
 /*!
 @file member_detail.php
 @brief メンバー詳細
-@copyright Copyright (c) 2017 Yamanoi Yasushi.
+@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
 */
 
 /////////////////////////////////////////////////////////////////

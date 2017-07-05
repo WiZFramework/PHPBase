@@ -2,7 +2,7 @@
 /*!
 @file controls.php
 @brief コントロールクラス
-@copyright Copyright (c) 2017 Yamanoi Yasushi.
+@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
 */
 ////////////////////////////////////
 //クラスブロック

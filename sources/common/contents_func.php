@@ -2,7 +2,7 @@
 /*!
 @file contents_func.php
 @brief 他コンテンツ系ユーティリティ
-@copyright Copyright (c) 2017 Yamanoi Yasushi.
+@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
 */
 ////////////////////////////////////
 //クラスブロック

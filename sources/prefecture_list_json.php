@@ -2,7 +2,7 @@
 /*!
 @file prefecture_list_json.php
 @brief 都道府県一覧(JSON版)
-@copyright Copyright (c) 2017 Yamanoi Yasushi.
+@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
 */
 
 /////////////////////////////////////////////////////////////////
