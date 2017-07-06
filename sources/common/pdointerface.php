@@ -53,6 +53,7 @@ class cpdo_err {
 /// PDOクラス
 //--------------------------------------------------------------------------------------
 class cpdo extends PDO{
+	private $m_display_errors = false;
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief  コンストラクタ
@@ -70,9 +71,21 @@ class cpdo extends PDO{
 				$this->exec("SET NAMES " . DB_CHARSET);
 				$this->commit();
 			}
+			if(ini_get('display_errors')){
+				$this->m_display_errors = true;
+			}
 		} catch (PDOException $e){
 			cpdo_err::err_exit('接続できません: ' . $e->getMessage());
 		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  display_errorsかどうかをチェックする
+	@return display_errorsならtrue
+	*/
+	//--------------------------------------------------------------------------------------
+	public function is_display_errors(){
+		return $this->m_display_errors;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -159,8 +172,7 @@ class csqlcore {
 	protected function excute_core(){
 		global $DB_PDO;
 		if(DB_DEBUG_MODE == 1){
-			//config.phpによるデバッグON
-			if(ini_get('display_errors')){
+			if($DB_PDO->is_display_errors()){
 				//PHPエラー出力あり
 				//PDO::ERRMODE_EXCEPTIONで例外処理
 				try{
@@ -191,7 +203,7 @@ class csqlcore {
 			$DB_PDO->rollBack();
 			$err_arr = $this->res->errorInfo();
 			$this->retarr['SQLSTATE_errorCode'] = $err_arr[0];
-			$this->retarr['mysql_errorCode'] = $err_arr[1];
+			$this->retarr['unique_errorCode'] = $err_arr[1];
 			$this->retarr['mess'] = $err_arr[2];
 			cpdo_err::err_exit($this->retarr);
 			return false;
@@ -209,8 +221,7 @@ class csqlcore {
 	//--------------------------------------------------------------------------------------
 	protected function exec_core($insert_flg){
 		if(DB_DEBUG_MODE == 1){
-			//config.phpによるデバッグON
-			if(ini_get('display_errors')){
+			if($DB_PDO->is_display_errors()){
 				//PHPエラー出力あり
 				//PDO::ERRMODE_EXCEPTIONで例外処理
 				try{
@@ -246,7 +257,7 @@ class csqlcore {
 			$DB_PDO->rollBack();
 			$err_arr = $this->res->errorInfo();
 			$this->retarr['SQLSTATE_errorCode'] = $err_arr[0];
-			$this->retarr['mysql_errorCode'] = $err_arr[1];
+			$this->retarr['unique_errorCode'] = $err_arr[1];
 			$this->retarr['mess'] = $err_arr[2];
 			cpdo_err::err_exit($this->retarr);
 			return 0;
