@@ -220,12 +220,9 @@ class csqlcore {
 	*/
 	//--------------------------------------------------------------------------------------
 	protected function exec_core($insert_flg){
-		//グローバル宣言
 		global $DB_PDO;
 		if(DB_DEBUG_MODE == 1){
 			if($DB_PDO->is_display_errors()){
-				//PHPエラー出力あり
-				//PDO::ERRMODE_EXCEPTIONで例外処理
 				try{
 					$DB_PDO->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 					$DB_PDO->beginTransaction ();
@@ -245,19 +242,18 @@ class csqlcore {
 					$this->retarr['error'] = $e->getMessage();
 					$this->retarr['mess'] = 'クエリが実行できません。';
 					cpdo_err::err_exit($this->retarr);
-					return 0;
 				}
+				return 0;
 			}
 		}
 		//上記以外はPDO::ERRMODE_SILENT
 		$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
 		$DB_PDO->beginTransaction();
 		$retcode = $DB_PDO->exec($this->retarr['sql']);
-		// PDOStatement::errorCode()の返り値が'00000'以外の値はエラー
-		if($this->res->errorCode() != '00000') {
+		if($retcode === false) {
 			// 失敗
 			$DB_PDO->rollBack();
-			$err_arr = $this->res->errorInfo();
+			$err_arr = $DB_PDO->errorInfo();
 			$this->retarr['SQLSTATE_errorCode'] = $err_arr[0];
 			$this->retarr['unique_errorCode'] = $err_arr[1];
 			$this->retarr['mess'] = $err_arr[2];
