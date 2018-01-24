@@ -220,6 +220,8 @@ class csqlcore {
 	*/
 	//--------------------------------------------------------------------------------------
 	protected function exec_core($insert_flg){
+		//グローバル宣言
+		global $DB_PDO;
 		if(DB_DEBUG_MODE == 1){
 			if($DB_PDO->is_display_errors()){
 				//PHPエラー出力あり
