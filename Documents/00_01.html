@@ -193,21 +193,8 @@ END_BLOCK;</span>
             echo $this->retarr['sql'];
             echo '&lt;br />[/sql debug]&lt;br />';
         }
-        try{
-            $DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $DB_PDO->beginTransaction ();
-            $this->res = $DB_PDO->prepare($this->retarr['sql']);
-            $this->res->execute();
-            $DB_PDO->commit();
-            return true;
-        }
-        catch(Exception $e){
-            $DB_PDO->rollBack();
-            $this->retarr['error'] = $e->getMessage();
-            $this->retarr['mess'] = 'クエリが実行できません。';
-            cpdo_err::err_exit($this->retarr);
-        }
-        return false;
+        //親クラスのexcute系関数を呼ぶ
+        return $this->excute_core();
     }
 </pre>
 </div>
