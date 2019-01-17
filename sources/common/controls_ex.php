@@ -78,6 +78,64 @@ END_BLOCK;
 }
 
 //--------------------------------------------------------------------------------------
+///	日付型テキストボックスをカプセル化
+//--------------------------------------------------------------------------------------
+class cinputdate
+{
+	public $m_name ;
+	public $m_value;
+	public $m_extstr;
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	@param[in]	$name	変数名
+	@param[in]	$value	値
+	@param[in]	$extstr	アトリビュート
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct($name,$value,$extstr = ""){
+		$this->m_name  = $name;
+		$this->m_value = $value;
+		$this->m_extstr = $extstr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コントロール作成文字列を返す
+	@param[in]	$conf	確認画面かどうか
+	@param[in]	$input_last_str	コントロールの後ろにつく文字列
+	@return	コントロール作成文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get($conf,$input_last_str = ''){
+		$spval = cutil::escape($this->m_value);
+		if($conf){
+			//conf
+			$str =<<<END_BLOCK
+<span style="font-weight: bold;">{$spval}</span>
+<input type="hidden" name="{$this->m_name }" value="{$spval}" />
+END_BLOCK;
+		}
+		else{
+$str =<<<END_BLOCK
+<input type="date" name="{$this->m_name }" {$this->m_extstr} value="{$spval}" />{$input_last_str}
+END_BLOCK;
+		}
+		return $str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コントロール作成文字列を出力する
+	@param[in]	$conf	確認画面かどうか
+	@param[in]	$input_last_str	コントロールの後ろにつく文字列
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function show($conf,$input_last_str = ''){
+		echo $this->get($conf,$input_last_str);
+	}
+}
+
+//--------------------------------------------------------------------------------------
 ///	グループ付きプルダウンをカプセル化
 //--------------------------------------------------------------------------------------
 class cselect_ex
