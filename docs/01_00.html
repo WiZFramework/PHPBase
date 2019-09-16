@@ -1,0 +1,262 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>１．住所録サンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>１００．サンプル概要と中間クラス</h3>
+　この章では<strong>住所録サンプル</strong>を紹介します。<strong>メンバー管理</strong>というサンプルです。<br />
+　まず、前章のように<strong>テーブル作成</strong>を行います。<strong>sqlディレクトリ</strong>に<strong>mysql_member_sql.txt</strong>というファイルがありますので、その中身をすべて<strong>phpMyAdmin</strong>もしくは<strong>コマンドライン</strong>から実行してください。<br />
+　正常にいくつかのテーブルが作成できたら、前章で紹介した<strong>メインメニューのページ</strong>から<strong>メンバー管理</strong>にリンクがあります。それをクリックすると、以下のような画面が出てきます。（テーブルができてないと<strong>メンバー管理</strong>には行けませんので注意してください）
+<p>&nbsp;</p>
+<img src="img/0100a.png" width="80%"/>
+<p>図0100a</p>
+<p>&nbsp;</p>
+　このサンプルには初期データは入ってません。<strong>新規</strong>をクリックすると詳細ページに行けます。以下が新規の詳細ページです。
+<p>&nbsp;</p>
+<img src="img/0100b.png" width="80%"/>
+<p>図0100b</p>
+<p>&nbsp;</p>
+　ここには<strong>都道府県管理</strong>にはなかった<strong>入力フィールド</strong>が並んでいます。<strong>メンバー名</strong>や<strong>市区郡町村以下</strong>は<strong>1行テキスト</strong>ですから<strong>都道府県管理</strong>にありましたが、ほかの入力は初めて出てきます。<br />
+　このサンプルの目的はこれらの入力フィールドを、<strong>PHPBase</strong>では、どのように実現しているのかを、説明するサンプルです。<br />
+<br />
+<h4>contents_db.phpへの追加</h4>
+　<strong>メンバー管理</strong>の中間クラスは<strong>都道府県管理</strong>同様<strong>contents_db.php</strong>に記述されています。
+<div class="box1">
+<pre>
+//--------------------------------------------------------------------------------------
+/// フルーツクラス
+//--------------------------------------------------------------------------------------
+class cfruits extends crecord {
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  コンストラクタ
+    */
+    //--------------------------------------------------------------------------------------
+    public function __construct() {
+        //親クラスのコンストラクタを呼ぶ
+        parent::__construct();
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  すべての個数を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @return 個数
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all_count($debug){
+        return $this->get_all_count_core($debug,'fruits');
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定された範囲の配列を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @return 配列（2次元配列になる）
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all($debug){
+        return $this->get_alltable_core($debug,'fruits','fruits_id');
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定されたIDの配列を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $id     ID
+    @return 配列（1次元配列になる）空の場合はfalse
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_tgt($debug,$id){
+        return $this->get_tgt_core($debug,$id,'fruits','fruits_id');
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  デストラクタ
+    */
+    //--------------------------------------------------------------------------------------
+    public function __destruct(){
+        //親クラスのデストラクタを呼ぶ
+        parent::__destruct();
+    }
+}
+
+//--------------------------------------------------------------------------------------
+/// メンバークラス
+//--------------------------------------------------------------------------------------
+class cmember extends crecord {
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  コンストラクタ
+    */
+    //--------------------------------------------------------------------------------------
+    public function __construct() {
+        //親クラスのコンストラクタを呼ぶ
+        parent::__construct();
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  すべての個数を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @return 個数
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all_count($debug){
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,                 //デバッグ文字を出力するかどうか
+            "count(*)",             //取得するカラム
+            "member,prefecture",            //取得するテーブル
+            "member.prefecture_id = prefecture.prefecture_id" //条件
+        );
+        if($row = $this->fetch_assoc()){
+            //取得した個数を返す
+            return $row['count(*)'];
+        }
+        else{
+            return 0;
+        }
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定された範囲の配列を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $from   抽出開始行
+    @param[in]  $limit  抽出数
+    @return 配列（2次元配列になる）
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all($debug,$from,$limit){
+        $arr = array();
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,         //デバッグ表示するかどうか
+            "member.*,prefecture.prefecture_name", //取得するカラム
+            "member,prefecture",    //取得するテーブル
+            "member.prefecture_id = prefecture.prefecture_id", //条件
+            "member.member_id asc", //並び替え
+            "limit " . $from . "," . $limit     //抽出開始行と抽出数
+        );
+        //順次取り出す
+        while($row = $this->fetch_assoc()){
+            $arr[] = $row;
+        }
+        //取得した配列を返す
+        return $arr;
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定されたIDの配列を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $id     ID
+    @return 配列（1次元配列になる）空の場合はfalse
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_tgt($debug,$id){
+        if(!cutil::is_number($id)
+        ||  $id &lt; 1){
+            //falseを返す
+            return false;
+        }
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,         //デバッグ表示するかどうか
+            "member.*,prefecture.prefecture_name",          //取得するカラム
+            "member,prefecture",    //取得するテーブル
+            "member.member_id ={$id} and 
+member.prefecture_id = prefecture.prefecture_id"    //条件
+        );
+        return $this->fetch_assoc();
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  フルーツとのマッチする配列を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $id     ID
+    @return 配列（1次元配列になる）
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all_fruits_match($debug,$id){
+        $arr = array();
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,         //デバッグ表示するかどうか
+            "*", //取得するカラム
+            "fruits_match", //取得するテーブル
+            "member_id = {$id}", //条件
+            "fruits_id asc" //並び替え
+        );
+        //順次取り出す
+        while($row = $this->fetch_assoc()){
+            $arr[] = $row['fruits_id'];
+        }
+        //取得した配列を返す
+        return $arr;
+    }
+
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  デストラクタ
+    */
+    //--------------------------------------------------------------------------------------
+    public function __destruct(){
+        //親クラスのデストラクタを呼ぶ
+        parent::__destruct();
+    }
+}
+</pre>
+</div>
+　ここでは<strong>メンバー</strong>のクラスである<strong>cmember</strong>のほかに<strong>好きな果物</strong>のクラスの<strong>cfruits</strong>も記述されています。また、<strong>cmember</strong>には<strong>都道府県ID</strong>である<strong>prefecture_id</strong>を利用してプルダウン作成のための記述がされています。<br />
+　もうひとつ、<strong>get_all_fruits_match()関数</strong>は<strong>複数選択チェックボックス</strong>用の関数です。<strong>mysql_member_sql.txt</strong>に記述がある<strong>fruits_match</strong>というテーブルのアクセス関数もあります。<br />
+<br />
+<h4>フルーツクラス</h4>
+　フルーツクラスは<strong>cfruits</strong>です。これはメニューには入れてないので追加や更新はHPからはできません。もし必要なら、<strong>都道府県管理</strong>のように<strong>マスタテーブル</strong>として扱えば実装できます。<br />
+　また<strong>cfruits</strong>を見ていただくとわかるのですが、<strong>cprefecture</strong>とは違い
+<div class="box1">
+<pre>
+    public function get_all_count($debug){
+        return $this->get_all_count_core($debug,'fruits');
+    }
+</pre>
+</div>
+　のように、<strong>$this->get_all_count_core(...);</strong>といった呼び出しが行われています。これは親クラスにあるサービス的な（ナマケモノ向きな）関数です。こう記述すると<strong>fruitsテーブルの総数</strong>が返ります。<br />
+　<strong>get_all()やget_tgt()</strong>にもコア関数がありますので、<strong>単純なマスタテーブル</strong>なら利用可能です（ちょっとでも複雑なら、select関数を呼んでください）。<br />
+<br />
+<h4>メンバークラス</h4>
+　メンバークラスは<strong>cmember</strong>ですが、ここに等価結合を実装してます。住所の<strong>都道府県</strong>の部分は、<strong>都道府県ID</strong>である<strong>prefecture_id</strong>を持っていて、<strong>get_all()関数</strong>や<strong>get_tgt()関数</strong>では<strong>prefectureテーブル</strong>も参照してます。<strong>都道府県名</strong>をじかに記述してもらうと<strong>福島けん</strong>とか<strong>ふくしま県</strong>とか記述が統一されなかったときに困りますから<strong>プルダウン</strong>で選んでもらうようにしているわけです。<br />
+　また、では<strong>リレーションシップ</strong>で<strong>がっちり手を結ばせたらいいのでは</strong>と思うかもしれませんが、経験上、結構、開発途中での<strong>テーブルの変更</strong>は行われることは多々あり、開発後半に<strong>リレーションシップ</strong>にすることはありますが、基本的に、僕は切り離しておきます（まあ、現場による、対応ということですね）。<br />
+　<strong>cmember</strong>にはもう一つ<strong>get_all_fruits_match()関数</strong>があります。この関数は<strong>memberテーブル</strong>は参照してません。<br />
+　何をしているかというと<strong>fruits_matchテーブル</strong>を参照して、メンバーIDでSELECTしてます。<strong>fruits_matchテーブル</strong>は、<strong>member_id　と　fruits_id</strong>が対になってるテーブルです。<strong>重複OK</strong>のテーブルで、<strong>member_id</strong>をキーにして参照するとそのメンバーが答えた<strong>好きなフルーツ</strong>の一覧が取得できるようにしておきます。<br />
+　たぶんなのですが、複雑なクエリを実行することで、<strong>get_tgt()関数</strong>で<strong>好きなフルーツ</strong>も取得することは可能とは思うのですが、僕自身の力量不足とSQLのマスターを目指しているわけではないと理由で、別々に取得しています。<br />
+<br />
+　なお、SELECT系を記述する親クラス<strong>crecord</strong>には<strong>query()関数</strong>があり、複雑なSQLはこちらで記述してください。<br />
+<br />
+　このように、SQLのSELECT関連の操作は、<strong>contents_db.php</strong>に記述することが可能だと思います。もし<strong>contents_db.php</strong>がファイルが大きくなってしまう場合は、例えば<strong>contents_db2.php</strong>といったファイルに記述して<strong>libs.php</strong>の最後に
+<div class="box1">
+<pre>
+require_once("contents_db2.php");
+</pre>
+</div>
+　のように記述します。
+
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="index.html">目次</a></li>
+<li><a href="01_01.html">次へ</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>

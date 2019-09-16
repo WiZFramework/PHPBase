@@ -1,0 +1,317 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>０．セットアップと最初のサンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>００１．中間層PHPの構造と記述方法</h3>
+　この項では<strong>中間層PHP</strong>である<strong>common/contents_db.php</strong>について説明します。<br/>
+　<strong>中間層PHP</strong>とは具体的には<strong>SELECT文</strong>を発行するクラスです。<strong>INSERT、UPDATE、DELETE</strong>は<strong>中間層PHP</strong>には含まれません。これら<strong>更新系のSQL</strong>については後述します。<br />
+　これから説明するようなクラスは、実際にPHPでサイトを作成する上で、各自が記述する必要があります。このドキュメントではサンプルとして<strong>都道府県テーブル</strong>用のクラスが記述されています。<br />
+　この項では、<strong>都道府県テーブル</strong>用のクラスを説明することで、記述方法の説明とします。<br />
+<br />
+<h4>コンテンツDBクラス</h4>
+　<strong>common/contents_db.php</strong>をエディタで開くと以下のようなクラスがあります。
+<div class="box1">
+<pre>
+//--------------------------------------------------------------------------------------
+/// 都道府県クラス
+//--------------------------------------------------------------------------------------
+class cprefecture extends crecord {
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  コンストラクタ
+    */
+    //--------------------------------------------------------------------------------------
+    public function __construct() {
+        //親クラスのコンストラクタを呼ぶ
+        parent::__construct();
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  すべての個数を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @return 個数
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all_count($debug){
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,                 //デバッグ文字を出力するかどうか
+            "count(*)",             //取得するカラム
+            "prefecture",           //取得するテーブル
+            "1"                 //条件
+        );
+        if($row = $this->fetch_assoc()){
+            //取得した個数を返す
+            return $row['count(*)'];
+        }
+        else{
+            return 0;
+        }
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定された範囲の配列を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $from   抽出開始行
+    @param[in]  $limit  抽出数
+    @return 配列（2次元配列になる）
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all($debug,$from,$limit){
+        $arr = array();
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,         //デバッグ表示するかどうか
+            "*",            //取得するカラム
+            "prefecture",   //取得するテーブル
+            "1",            //条件
+            "prefecture_id asc",    //並び替え
+            "limit " . $from . "," . $limit     //抽出開始行と抽出数
+        );
+        //順次取り出す
+        while($row = $this->fetch_assoc()){
+            $arr[] = $row;
+        }
+        //取得した配列を返す
+        return $arr;
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定されたIDの配列を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $id     ID
+    @return 配列（1次元配列になる）空の場合はfalse
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_tgt($debug,$id){
+        if(!cutil::is_number($id)
+        ||  $id &lt; 1){
+            //falseを返す
+            return false;
+        }
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,         //デバッグ表示するかどうか
+            "*",            //取得するカラム
+            "prefecture",   //取得するテーブル
+            "prefecture_id=" . $id  //条件
+        );
+        return $this->fetch_assoc();
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  デストラクタ
+    */
+    //--------------------------------------------------------------------------------------
+    public function __destruct(){
+        //親クラスのデストラクタを呼ぶ
+        parent::__destruct();
+    }
+}
+</pre>
+</div>
+　このクラスは、<strong>都道府県テーブル</strong>の<strong>SELECT文用</strong>のクラスです。<br />
+　<strong>都道府県テーブル</strong>は<strong>prefecture</strong>という名前です。<strong>prefecture</strong>をSELECTするクラスなので<strong>cprefectureクラス</strong>としています。<br />
+　このドキュメントでは、このようなクラスを<strong>コンテンツDBクラス</strong>と称します。<strong>コンテンツDBクラス</strong>は、必ず<strong>crecordクラス</strong>を継承して作成します。<br />
+　<strong>prefectureテーブル</strong>のようなテーブルを<strong>マスタテーブル</strong>といいます。<strong>日常的に変更が行われることが少ない</strong>テーブルです。<strong>マスタテーブル</strong>は通常は管理画面などで<strong>追加や更新</strong>ができるようになっています。<br />
+　単純なマスタテーブル用のSQL文は、<strong>総レコードの数を得る</strong>、<strong>指定したレコードから何行かを取り出す</strong>、<strong>指定したレコードを取り出す</strong>の３つのアクセス方法があれば足りる場合が多いと思います。<br />
+<br />
+<h4>SELECT文を発行する</h4>
+　<strong>cprefectureクラス</strong>はこららのSQLに対応するメンバ関数が記述されています。<br />
+　まず、<strong>総レコードの数を得る</strong>は<strong>get_all_count()関数</strong>です。以下に抜き出します。
+<div class="box1">
+<pre>
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  すべての個数を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @return 個数
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all_count($debug){
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,                 //デバッグ文字を出力するかどうか
+            "count(*)",             //取得するカラム
+            "prefecture",           //取得するテーブル
+            "1"                 //条件
+        );
+        if($row = $this->fetch_assoc()){
+            //取得した個数を返す
+            return $row['count(*)'];
+        }
+        else{
+            return 0;
+        }
+    }
+</pre>
+</div>
+　まず、この関数の引数は<strong>$debug</strong>です。これは<strong>発行されたSQL文を表示するかどうか</strong>のフラグで、これをtrueにするとSQL文をechoします。<br />
+　続いて<strong>$this->select(...);</strong>と、親クラスの<strong>select()関数</strong>を呼び出します。この関数は<strong>common/pdointerface.php</strong>に記述があり、以下のような内容になっています。
+<div class="box1">
+<pre>
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  select文の実行
+    @param[in]  $debug クエリを出力するかどうか
+    @param[in]  $columns 取得するカラム
+    @param[in]  $table 取得するテーブル
+    @param[in]  $where 条件文（省略可）
+    @param[in]  $orderby ならび順（省略可）
+    @param[in]  $limit 抽出範囲（省略可）
+    @return 成功すればtrue
+    */
+    //--------------------------------------------------------------------------------------
+    public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = ''){
+        global $DB_PDO;
+        $this->free_res();
+        if($orderby != ""){
+            $orderby = "order by " . $orderby;
+        }
+        <span class="red">$this->retarr['sql'] =&lt;&lt;&lt;END_BLOCK
+select
+{$columns} 
+from
+{$table}
+where
+{$where}
+{$orderby}
+{$limit}
+END_BLOCK;</span>
+        if($debug){
+            echo '&lt;br />[sql debug]&lt;br />';
+            echo $this->retarr['sql'];
+            echo '&lt;br />[/sql debug]&lt;br />';
+        }
+        //親クラスのexcute系関数を呼ぶ
+        return $this->excute_core();
+    }
+</pre>
+</div>
+　赤くなっているところが<strong>SELECT文</strong>を組み立てているところです。<br />
+　<strong>SELECT文</strong>は、一般的には
+<div class="box1">
+<pre>
+select
+抽出するカラム
+from
+テーブル
+where
+条件式
+[ソート順]
+[limit句]
+</pre>
+</div>
+　となります。これを、関数内で組み立てていることになります。<br />
+　ただ一つだけ問題なのが
+<div class="box1">
+<pre>
+select
+*
+from
+prefecture
+</pre>
+</div>
+　のような場合です。<strong>where</strong>は省略可能です。<br />
+　しかし、このSQLは
+<div class="box1">
+<pre>
+select
+*
+from
+prefecture
+where
+1
+</pre>
+</div>
+　と記述することも可能です。<strong>1</strong>というのは<strong>真</strong>という意味があり<strong>すべて</strong>ということになります。<br />
+　ですから<strong>cprefecture::get_all_count()関数</strong>が作り出すSQL文は
+<div class="box1">
+<pre>
+select
+count(*)
+from
+prefecture
+where
+1
+</pre>
+</div>
+　となります。<strong>count(*)</strong>は、SQLの総数を返す内部コマンドです。<br />
+<br />
+<h4>SELECT文を発行する</h4>
+　このように<strong>$this->select(...);</strong>を実行することによりSQL文が発行されます。正常にリソースが取得できると、
+<div class="box1">
+<pre>
+        if($row = $this->fetch_assoc()){
+            //取得した個数を返す
+            return $row['count(*)'];
+        }
+        else{
+            return 0;
+        }
+</pre>
+</div>
+　と<strong>$this->fetch_assoc()関数</strong>呼び出しで<strong>1行分の配列データ</strong>を取得します。この関数は、内部的には<strong>PDOStatement::fetch_assoc()関数</strong>を呼び出します。
+この関数は取得できない場合<strong>FALSE</strong>を返します。<br />
+　このように、<strong>cprefecture::get_all_count()関数</strong>の戻り値は<strong>行数</strong>になります。<br />
+<br />
+<h4>一覧表示用のメンバ関数</h4>
+　一覧表示に使用されるSELECT文は<strong>cprefecture::get_all()関数</strong>で実装します。<br />
+　SELECT文発行のメカニズムは上記と変わりありません。1つ注意点は、この関数は<strong>何行目から何行分を取り出す</strong>という設計になっています。これは、<strong>ページ分け</strong>するのに必要な処理です。
+<div class="box1">
+<pre>
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定された範囲の配列を得る
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $from   抽出開始行
+    @param[in]  $limit  抽出数
+    @return 配列（2次元配列になる）
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all($debug,$from,$limit){
+
+    //以下略
+</pre>
+</div>
+　このようなパラメータになっています。<strong>$from</strong>と<strong>$limit</strong>を受け取ります。この値を設定するのは<strong>一覧ページ</strong>である<strong>prefecture_list.php</strong>で行いますので、<strong>ページ分け</strong>については、一覧ページの説明で行います。<br />
+　ここでは<strong>cprefecture::get_all()関数</strong>は<strong>$from</strong>と<strong>$limit</strong>を受け取るように作成しておく、ということだけ確認しておいてください。<br />
+　なお<strong>cprefecture::get_all()関数</strong>は2次元配列を返します。受け取ったほうはその2次元配列をもとに<strong>HTML</strong>に書式化してechoする形になります。<br />
+<br />
+<h4>詳細表示用のメンバ関数</h4>
+　<strong>詳細表示</strong>用のメンバ関数は<strong>詳細ページ（prefecture_detail.php）</strong>で使用しする<strong>cprefecture::get_tgt()関数</strong>になります。この関数はパラメータに<strong>プライマリキー（prefecture_id）</strong>を渡します。SELECT文を発行する前に、パラメータの有効性（数字でなおかつ1以上かどうか）をチェックしています。<br />
+　このチェックに使っている<strong>cutil::is_number()関数</strong>はスタティック関数で<strong>common/function.php</strong>に実体があります。<strong>cutilクラス</strong>にはほかにもユーティリティ的に使用できる、スタティック関数がありますので、目を通しておくとよいでしょう。<br />
+<br />
+<h4>PHPBaseの考え方</h4>
+　以上、ざっとですが<strong>コンテンツDBクラス</strong>である<strong>cprefectureクラス</strong>について説明しました。<br />
+　<strong>PHPBase</strong>の考え方は、このような<strong>コンテンツDBクラス</strong>を記述する作業と、<strong>prefecture_list.phpやprefecture_detail.php</strong>を記述する作業を分けることで、<strong>コードの階層化</strong>を図ろう、ということです。<br />
+　各テーブルに対して（あるいはリレーショナルで同時にSELECT文に含めるテーブルのグループに対して）、<strong>コンテンツDBクラス</strong>を記述することで、上層部のコードからは<strong>SQL文</strong>を意識しないで記述ができるようになります。<br />
+　チームで組む場合は、例えば<strong>プログラムリーダー</strong>的な人が<strong>コンテンツDBクラス</strong>を担当し、それ以外に人が各ページを担当すれば、SQLの発行はプログラムリーダーが組む<strong>コンテンツDBクラス</strong>からしかできない形になります。<br />
+　こうしておけば、突然、クライアントの要求でテーブルの内容を変える必要が出てきたとしても、上層部のプログラマは意識しないですみます。テーブル修正によるSQL文の修正なども<strong>プログラムリーダー</strong>が行えばいい形になります。
+
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="00_00.html">前へ</a></li>
+<li><a href="index.html">目次</a></li>
+<li><a href="00_02.html">次へ</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>

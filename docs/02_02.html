@@ -1,0 +1,54 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>２．Smartyを使った住所録サンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>２０２．詳細ページの記述方法（Smarty版）</h3>
+<h4>２つのテンプレート</h4>
+　<strong>Smarty版ではない</strong>詳細ページでは<strong>編集ページと確認ページ</strong>を意識しながらPHPも記述する必要がありました。<br />
+　しかし<strong>Smarty</strong>を使うと、<strong>編集ページと確認ページでテンプレートを分けて</strong>記述することが可能になります。<br />
+　まずPHPファイル<strong>sources/member_detail_smarty.php</strong>を見てみましょう。最後のテンプレート呼び出しのところで
+<div class="box1">
+<pre>
+//Smartyを使用した表示(テンプレートファイルの指定)
+if(isset($_POST['func']) && $_POST['func'] == 'conf'){
+    $button = '更新';
+    if($member_id &lt;= 0){
+        $button = '追加';
+    }
+    $smarty->assign('button',$button);
+    $smarty->display('member_detail_smarty_conf.tmpl');
+}
+else{
+    $smarty->display('member_detail_smarty.tmpl');
+}
+</pre>
+</div>
+　このように<strong>入力と確認</strong>でテンプレートを分けています。このようにできるのも<strong>テンプレートエンジン</strong>を使うからです。<br />
+<br />
+　詳細ページも一覧ページと同様、<strong>アサインとテンプレートへの表示指示</strong>で構成されています。入力種類も多いので、いろいろ細かい処理を行ってますが、基本は<strong>Smartyを使わない詳細ページ</strong>と同様です。細かく説明しませんので、コードを読んでみてください。
+
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="02_01.html">前へ</a></li>
+<li><a href="index.html">目次</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>

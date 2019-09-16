@@ -1,0 +1,156 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>０．セットアップと最初のサンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>０００．構造とセットアップ</h3>
+　<strong>PHPBase</strong>は<strong>PHPを階層的に記述する</strong>ことで、各階層の役割を明確にし、<strong>コーディング規則</strong>の指針になるよう設計された<strong>DBアクセス支援ライブラリ</strong>です。<br />
+　ライブラリ自体のサイズは非常にミニマムなため、インクルードされるPHPファイルも、大変少なくなっています。<br />
+<br />
+<h4>commonディレクトリ</h4>
+　<strong>PHPBase</strong>は<strong>common</strong>ディレクトリに配置されます。このディレクトリ自体はどこにあっても問題はありません。ただ、<strong>各ページのPHPファイル</strong>から<strong>相対的パスで見える位置</strong>にある必要があります。<br />
+　具体的に、サンプルコードの階層を以下に紹介します。<br />
+<br />
+<ul class="mokuji">
+    <li>sources
+    <ul>
+        <li>common
+        <ul>
+            <li><span class="red">config.php</span></li>
+            <li><span class="red">contents_db.php</span></li>
+            <li>contents_func.php</li>
+            <li>controls.php</li>
+            <li>controls_ex.php</li>
+            <li>function.php</li>
+            <li>libs.php</li>
+            <li>pdointerface.php</li>
+        </ul>
+        </li>
+    </ul>
+    </li>
+</ul>
+　このうち赤くなっているファイルは<strong>環境に合わせて</strong>あるいは<strong>DBの内容に合わせて</strong>各利用者が記述します。<br />
+　この章では、簡単な例として<strong>都道府県管理</strong>を紹介します。<br />
+<br />
+<h4>DB接続</h4>
+　<strong>DB接続</strong>に必要な情報は<strong>config.php</strong>に記述します。<br />
+　以下はダウンロードした状態の<strong>config.php</strong>です。
+<div class="box1">
+<pre>
+&lt;?php
+/*!
+@file config.php
+@brief DB接続変数と、エンコードの定義
+@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
+*/
+////////////////////////////////////
+//実行ブロック
+//データベースマネージメント
+define('DB_RDBMS','mysql');
+//MySQLの場合のキャラ設定にSET NAMESを使用するかどうか
+define('DB_MYSQL_SET_NAMES','1');
+<span class="red">//ホスト(ローカルの場合は'localhost'と記述)
+define('DB_HOST','********');
+//ユーザー
+define('DB_USER','********');
+//パスワード
+define('DB_PASS','********');
+//DB名
+define('DB_NAME','********');</span>
+//DBのキャラセット
+define('DB_CHARSET','utf8');
+//PHPのキャラセット
+define('PHP_CHARSET','UTF-8');
+//デバッグかどうか
+define('DB_DEBUG_MODE','1');
+<span class="red">//サイトのルートからのパス
+define('SITE_BASE_URL','/sources/');</span>
+//デバッグでない場合のエラー時のリダイレクト先
+define('DB_ERR_REDIRECT_URL',SITE_BASE_URL . 'errpage.php');
+
+?>
+</pre>
+</div>
+　この赤くなっている部分を環境に合わせて書き換えする必要があります。<br />
+　コメントにあるように<strong>ホスト、ユーザー、パスワード、DB名</strong>を記述します。<strong>サイトのルートからのパス</strong>は、これらのPHPがアップするディレクトリが
+<div class="box1">
+<pre>
+http://www.hoge.huga/sources/
+</pre>
+</div>
+　であれば<strong>/sources/</strong>と記述します。<br />
+<br />
+<h4>SQL文によるテーブルの作成</h4>
+　<strong>/sql/mysql_prefecture_sql.txt</strong>ファイルには<strong>都道府県テーブル</strong>の<strong>SQL文</strong>が記述されています。このSQL文は<strong>MySQL</strong>特有の記述も入ってますので、ほかのDBMSで利用する場合は注意してください。<br />
+　このSQL文をコマンドラインもしくは<strong>phpMyAdmin</strong>で実行してください。テーブルと47都道府県レコードが作成されます。<br />
+<br />
+　<strong>config.php</strong>の設定と<strong>SQL文によるテーブルの作成</strong>が終わったら、<strong>/sources/</strong>ディレクトリ内をサーバーにアップします。<br />
+<br />
+<h4>動作チェック</h4>
+　サーバーにアップしましたら、ブラウザから<strong>/sources/index.php</strong>にアクセスします。上記の<strong>http://www.hoge.huga</strong>がサイトURLであれば
+<div class="box1">
+<pre>
+http://www.hoge.huga/sources/index.php
+</pre>
+</div>
+　にアクセスします。以下のような画面が無事表示されれば、まずは成功です。
+<p>&nbsp;</p>
+<img src="img/0000aa.png" width="80%"/>
+<p>図0000aa</p>
+<p>&nbsp;</p>
+　続いて<strong>都道府県管理</strong>をクリックします。(ほかのメニューのリンクはクリックしないでください。まだ準備ができていません。1章以降でセットアップします)
+<p>&nbsp;</p>
+<img src="img/0000a.png" width="80%"/>
+<p>図0000a</p>
+<p>&nbsp;</p>
+　続いて<strong>詳細ページ</strong>に移行します。どこか都道府県名のリンクをクリックしてみてください。以下の画面になります。
+<p>&nbsp;</p>
+<img src="img/0000b.png" width="80%"/>
+<p>図0000b</p>
+<p>&nbsp;</p>
+　ここで<strong>都道府県名</strong>を修正して確認すると、以下のようになります。
+<p>&nbsp;</p>
+<img src="img/0000c.png" width="80%"/>
+<p>図0000c</p>
+<p>&nbsp;</p>
+　ここで、<strong>更新</strong>をクリックするとレコードが更新されます。<br />
+　また、一覧ページで<strong>新規</strong>で詳細ページに移行すると以下の画面になります。
+<p>&nbsp;</p>
+<img src="img/0000d.png" width="80%"/>
+<p>図0000d</p>
+<p>&nbsp;</p>
+　ここで、新規に追加できます。<br />
+　また、一覧ページでは<strong>削除</strong>もできます。各レコードにある<strong>削除確認</strong>ボタンをクリックすると以下のようなダイアログが出ます。<p>&nbsp;</p>
+<img src="img/0000e.png" width="80%"/>
+<p>図0000e</p>
+<p>&nbsp;</p>
+　ここで<strong>OK</strong>をクリックすると削除されます。この例は<strong>テスト県</strong>を新規で作成して、そのレコードを削除しようとしているところです。<br />
+　このように<strong>追加、更新、削除</strong>でできる形になっています。<br />
+<br/>
+　この例にある<strong>都道府県</strong>は、そう変化するものではありませんので、追加や削除機能が必要かどうかは別として、このような機能を実装できます、という例です。<br />
+　また<strong>追加</strong>をしますと、データベースの仕様として<strong>プライマリキー</strong>は欠番になります。固定的なマスタテーブルの場合、このような<strong>欠番</strong>は一般的にはバグのもとにもなるので初期化しておきましょう。<br />
+　<strong>SQL文によるテーブルの作成</strong>の方法で初期化します。
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="index.html">目次</a></li>
+<li><a href="00_01.html">次へ</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>

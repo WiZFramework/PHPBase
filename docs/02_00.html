@@ -1,0 +1,76 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>２．Smartyを使った住所録サンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>２００．サンプル概要とSmartyについて</h3>
+　この章で説明するサンプルは前章の<strong>住所録</strong>の<strong>Smarty版</strong>です。<br />
+　<strong>Smarty</strong>というのは<strong>PHPのテンプレートエンジン</strong>で、古くから使われていて安定した動作する<strong>テンプレートライブラリ</strong>です。<br />
+　PHPはプログラムとHTMLを同じファイル（PHPファイル）に記述することができ、また、PHPブロックとHTMLを交互に記述できるなど、柔軟な言語なのですが、反面、ソースとHTMLが混同してしまいがちです。可読性も失われます。<br />
+　そのためPHPの技術者は<strong>PHPとHTMLを分けて記述する</strong>という習慣になることが多いです。前章でのサンプルも<strong>実行ブロック、関数ブロック、HTMLブロック</strong>など、分けて記述してます。<br />
+　しかし、そういった<strong>ブロック分け</strong>も限界があり、例えば<strong>プログラマとデザイナが同じ空間にいない</strong>現場では（よくある話です）、複数の人が同じPHPファイルを修正することも多々あり、それが<strong>不具合や先祖返り</strong>を生み出すことになってしまいます。<br />
+　またデザイナーさんは極力PHPファイルは触りたがらないものです。<br />
+　そのため、<strong>プログラム部とデザイン部を分けて記述する</strong>テンプレートエンジンは、PHPの開発でなくてはならないものとなっています。<br />
+<br />
+　<strong>テンプレートエンジン</strong>といいましても、多数存在し、フレームワークにくっついているものもあります。<br />
+　ここではその中でも<strong>老舗</strong>である<strong>Smarty</strong>による記述を紹介します。<br />
+　まあ。新しもの好きの方には不満かもしれませんが、簡単に使えて動作速度も速いので、僕は長年愛用しています（新しい文法覚えるのも結構つらいしね）。<br />
+<br />
+<h4>Smartyのセットアップ</h4>
+　この<strong>PHPBase</strong>には<strong>Smarty本体</strong>はついていません。理由は、最新のものを使用したほうがいいでしょうし、また<strong>Smarty</strong>には、現在2つのバージョンがあって、PHPのバージョンによって別のものを使用する必要があります。<br />
+　Smartyへのリンクはあえて記しませんが<strong>Smarty</strong>で<strong>Google先生</strong>に聞けばすぐ出てきます。<br />
+　お使いののPHPのバージョンに合った<strong>Smarty</strong>をダウンロードしたら、<strong>Smartyのlibs（解凍したディレクトリ内にあります）</strong>を、以下のディレクトリ階層の<strong>Smarty/libs</strong>にコピーします。<br />
+　GitHubから取得した状態ですと<strong>cache、config、templates_c</strong>のディレクトリがありませんので、各自作成してください。
+<ul class="mokuji">
+    <li>Smarty
+    <ul>
+        <li>cache</li>
+        <li>config</li>
+        <li><span class="red">libs</span></li>
+        <li>templates</li>
+        <li>templates_c</li>
+    </ul>
+    </li>sources<li>
+    </li>
+</ul>
+　そして<strong>Smartyディレクトリごと</strong>アップロードすればいいのですが、アップロード後に<strong>cacheとtemplates_c</strong>のパーミッションに<strong>その他による書き込み許可</strong>を与えてください。そうしないと<strong>Smarty</strong>が動きません。<br />
+　これで<strong>Sartyのセットアップ</strong>は完了です。<br/>
+<br />
+<h4>Smarty版のメンバー一覧にアクセス</h4>
+　<strong>Smarty</strong>のアップロードが完了したらメインメニューから<strong>メンバー管理（Smarty版）</strong>にアクセスします。<br />
+　前章で紹介した内容とほとんど同じです（タイトルにSmarty版が入ってます）。詳細画面でメンバーの追加、更新ができ、一覧ページで削除ができます。
+<p>&nbsp;</p>
+<img src="img/0200a.png" width="80%"/>
+<p>図0200a</p>
+<p>&nbsp;</p>
+<h4>Smarty版のメンバー詳細にアクセス</h4>
+　<strong>新規</strong>で以下の画面が出ます。一覧ページ同様<strong>Smarty版</strong>となってます。
+<p>&nbsp;</p>
+<img src="img/0200b.png" width="80%"/>
+<p>図0200b</p>
+<p>&nbsp;</p>
+
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="index.html">目次</a></li>
+<li><a href="02_01.html">次へ</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>
