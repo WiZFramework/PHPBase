@@ -13,10 +13,10 @@
 ６、ユーティリティとして、PHPによる「inputコントロールなど」を「入力画面」「確認画面」で、動的に振り分け表示できるクラスが用意されてます。デザインの面で自由度は低いですが、デザイン優先ではない管理画面等では使用できると思います。  
 ７、ライセンスは「MITライセンス」となります。改変など自由ですが、くれぐれもご自分の責任においてお使いください。  
 
-Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
-Released under the MIT license
-https://opensource.org/licenses/mit-license.php
-
+Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.  
+Released under the MIT license  
+https://opensource.org/licenses/mit-license.php  
+  
 サンプルの実装方法  
 　手始めとして「都道府県テーブル」「メンバーテーブル」の操作のサンプルを用意しました。  
 　「Documents」ディレクトリの「index.html」をブラウザで起動し、「セットアップと最初のサンプル」から参照ください。  
