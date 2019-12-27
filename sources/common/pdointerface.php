@@ -74,6 +74,7 @@ class cpdo extends PDO{
 			if(ini_get('display_errors')){
 				$this->m_display_errors = true;
 			}
+			$this->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 		} catch (PDOException $e){
 			cpdo_err::err_exit('接続できません: ' . $e->getMessage());
 		}
@@ -273,6 +274,87 @@ class csqlcore {
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
+	@brief bind付excute系のSQLを実行する
+	@param[in]  $values  SQLにはバインド用の値が入っている前提
+	@return 成功すればtrue
+	*/
+	//--------------------------------------------------------------------------------------
+	protected function excute_bind_core($values){
+		global $DB_PDO;
+		if(DB_DEBUG_MODE == 1){
+			if($DB_PDO->is_display_errors()){
+				//PHPエラー出力あり
+				//PDO::ERRMODE_EXCEPTIONで例外処理
+				try{
+					$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+					$DB_PDO->beginTransaction ();
+					//ここで、$this->retarr['sql']には「:id」のようにバインドされた PHP 変数が入っている
+					$this->res = $DB_PDO->prepare($this->retarr['sql']);
+					foreach($values as $key => $val){
+						if(is_bool($val)){
+							$this->res->bindValue($key, (bool)$val, PDO::PARAM_BOOL);
+						}
+						else if(is_int($val)){
+							$this->res->bindValue($key, (int)$val, PDO::PARAM_INT);
+						}
+						else if(is_string($val)){
+							$this->res->bindValue($key, $val, PDO::PARAM_STR);
+						}
+						else{
+							$this->res->bindValue($key, $val, PDO::PARAM_STR);
+						}
+					}
+					$this->res->execute();
+					$DB_PDO->commit();
+					return true;
+				}
+				catch(Exception $e){
+					$DB_PDO->rollBack();
+					$this->retarr['error'] = $e->getMessage();
+					$this->retarr['mess'] = 'クエリが実行できません。';
+					cpdo_err::err_exit($this->retarr);
+				}
+				return false;
+			}
+		}
+		//上記以外はPDO::ERRMODE_SILENT
+		$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
+		$DB_PDO->beginTransaction();
+		$this->res = $DB_PDO->prepare($this->retarr['sql']);
+		foreach($values as $key => $val){
+			if(is_bool($val)){
+				$this->res->bindValue($key, (bool)$val, PDO::PARAM_BOOL);
+			}
+			else if(is_int($val)){
+				$this->res->bindValue($key, (int)$val, PDO::PARAM_INT);
+			}
+			else if(is_string($val)){
+				$this->res->bindValue($key, $val, PDO::PARAM_STR);
+			}
+			else{
+				$this->res->bindValue($key, $val, PDO::PARAM_STR);
+			}
+		}
+		$this->res->execute();
+		// PDOStatement::errorCode()の返り値が'00000'以外の値はエラー
+		if($this->res->errorCode() != '00000') {
+			// 失敗
+			$DB_PDO->rollBack();
+			$err_arr = $this->res->errorInfo();
+			$this->retarr['SQLSTATE_errorCode'] = $err_arr[0];
+			$this->retarr['unique_errorCode'] = $err_arr[1];
+			$this->retarr['mess'] = $err_arr[2];
+			cpdo_err::err_exit($this->retarr);
+			return false;
+		}
+		// 成功
+		$DB_PDO->commit();
+		return true;
+	}
+
+
+	//--------------------------------------------------------------------------------------
+	/*!
 	@brief  デストラクタ
 	*/
 	//--------------------------------------------------------------------------------------
@@ -313,7 +395,7 @@ class crecord extends csqlcore {
 		if($orderby != ""){
 			$orderby = "order by " . $orderby;
 		}
-		$this->retarr['sql'] =<<<END_BLOCK
+		$this->retarr['sql'] =<<< END_BLOCK
 select
 {$columns} 
 from
@@ -330,6 +412,59 @@ END_BLOCK;
 		}
 		//親クラスのexcute系関数を呼ぶ
 		return $this->excute_core();
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  プレースフォルダ付SELECT文の実行
+	@param[in]  $debug クエリを出力するかどうか
+	@param[in]  $bind_sql プレースホルダが入ったSQL文
+	@param[in]  $values 値が入った配列
+	@return 成功すればtrue
+	*/
+	//--------------------------------------------------------------------------------------
+	public function excute_bind($debug,$bind_sql,$values){
+		global $DB_PDO;
+		$this->free_res();
+		//プレースホルダが入ったSQL文
+		$this->retarr['sql'] = $bind_sql;
+		if($debug){
+			echo '<br />[sql debug]<br />';
+			echo $this->retarr['sql'];
+			echo '<br />[/sql debug]<br />';
+		}
+		//親クラスのexcute_bind_core関数を呼ぶ
+		return  $this->excute_bind_core($values);
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  select文の実行
+	@param[in]  $debug クエリを出力するかどうか
+	@param[in]  $values 値が入った配列
+	@param[in]  $columns 取得するカラム
+	@param[in]  $table 取得するテーブル
+	@param[in]  $bind_where プレースフォルダつき条件文
+	@param[in]  $orderby ならび順（省略可）
+	@param[in]  $limit 抽出範囲（省略可）
+	@return 成功すればtrue
+	*/
+	//--------------------------------------------------------------------------------------
+	public function select_bind($debug,$values,$columns,$table,$bind_where,$orderby = '',$limit = ''){
+		if($orderby != ""){
+			$orderby = "order by " . $orderby;
+		}
+		$bind_sql =<<< END_BLOCK
+select
+{$columns} 
+from
+{$table}
+where
+{$bind_where}
+{$orderby}
+{$limit}
+END_BLOCK;
+		//excute_bind関数を呼ぶ
+		return $this->excute_bind($debug,$bind_sql,$values);
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -553,7 +688,7 @@ class cchange_ex extends csqlcore {
 			$count++;
 		}
 		$sqlarr .= ")";
-		$this->retarr['sql'] =<<<END_BLOCK
+		$this->retarr['sql'] =<<< END_BLOCK
 insert into
 {$table}
 {$sqlarr}
@@ -595,7 +730,7 @@ END_BLOCK;
 			$count++;
 		}
 		$sqlarr .= ")";
-		$sql =<<<END_BLOCK
+		$sql =<<< END_BLOCK
 insert into
 {$table}
 {$sqlarr}
@@ -631,7 +766,7 @@ END_BLOCK;
 			}
 			$count++;
 		}
-		$this->retarr['sql'] =<<<END_BLOCK
+		$this->retarr['sql'] =<<< END_BLOCK
 update
 {$table}
 set
@@ -669,7 +804,7 @@ END_BLOCK;
 			}
 			$count++;
 		}
-		$sql =<<<END_BLOCK
+		$sql =<<< END_BLOCK
 update
 {$table}
 set
@@ -697,7 +832,7 @@ END_BLOCK;
 			cpdo_err::err_exit($this->retarr);
 			return 0;
 		}
-		$this->retarr['sql'] =<<<END_BLOCK
+		$this->retarr['sql'] =<<< END_BLOCK
 delete
 from
 {$table}
@@ -722,7 +857,7 @@ END_BLOCK;
 			$this->retarr['mess'] = '削除すべきデータがありません。';
 			cpdo_err::err_exit($this->retarr);
 		}
-		$sql =<<<END_BLOCK
+		$sql =<<< END_BLOCK
 delete
 from
 {$table}
@@ -748,7 +883,7 @@ END_BLOCK;
 			cpdo_err::err_exit($this->retarr);
 			return 0;
 		}
-		$this->retarr['sql'] =<<<END_BLOCK
+		$this->retarr['sql'] =<<< END_BLOCK
 delete
 from
 {$table}
@@ -770,7 +905,7 @@ END_BLOCK;
 			$this->retarr['mess'] = '削除すべきテーブルがありません。';
 			cpdo_err::err_exit($this->retarr);
 		}
-		$sql =<<<END_BLOCK
+		$sql =<<< END_BLOCK
 delete
 from
 {$table}
