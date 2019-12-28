@@ -167,10 +167,11 @@ class csqlcore {
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief excute系のSQLを実行する
+	@param[in]  $values  SQLにはバインド用の値が入っている前提
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	protected function excute_core(){
+	protected function excute_core($values = array(),$is_insert = false){
 		global $DB_PDO;
 		if(DB_DEBUG_MODE == 1){
 			if($DB_PDO->is_display_errors()){
@@ -180,7 +181,32 @@ class csqlcore {
 					$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 					$DB_PDO->beginTransaction ();
 					$this->res = $DB_PDO->prepare($this->retarr['sql']);
+					if(is_array($values) && count($values) > 0){
+						foreach($values as $key => $val){
+							if(is_int($val)){
+								$param = PDO::PARAM_INT;
+							}
+							elseif(is_bool($val)){
+								$param = PDO::PARAM_BOOL;
+							}
+							elseif(is_null($val)){
+								$param = PDO::PARAM_NULL;
+							}
+							elseif(is_string($val)){
+								$param = PDO::PARAM_STR;
+							}
+							else{
+								$param = FALSE;
+							}
+							if($param){
+								$this->res->bindValue($key, $val, $param);
+							}
+						}
+					}
 					$this->res->execute();
+					if($is_insert){
+						$this->retarr['lastinsert'] = $DB_PDO->lastInsertId();
+					}
 					$DB_PDO->commit();
 					return true;
 				}
@@ -197,6 +223,28 @@ class csqlcore {
 		$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
 		$DB_PDO->beginTransaction();
 		$this->res = $DB_PDO->prepare($this->retarr['sql']);
+		if(is_array($values) && count($values) > 0){
+			foreach($values as $key => $val){
+				if(is_int($val)){
+					$param = PDO::PARAM_INT;
+				}
+				elseif(is_bool($val)){
+					$param = PDO::PARAM_BOOL;
+				}
+				elseif(is_null($val)){
+					$param = PDO::PARAM_NULL;
+				}
+				elseif(is_string($val)){
+					$param = PDO::PARAM_STR;
+				}
+				else{
+					$param = FALSE;
+				}
+				if($param){
+					$this->res->bindValue($key, $val, $param);
+				}
+			}
+		}
 		$this->res->execute();
 		// PDOStatement::errorCode()の返り値が'00000'以外の値はエラー
 		if($this->res->errorCode() != '00000') {
@@ -208,6 +256,9 @@ class csqlcore {
 			$this->retarr['mess'] = $err_arr[2];
 			cpdo_err::err_exit($this->retarr);
 			return false;
+		}
+		if($is_insert){
+			$this->retarr['lastinsert'] = $DB_PDO->lastInsertId();
 		}
 		// 成功
 		$DB_PDO->commit();
@@ -274,87 +325,6 @@ class csqlcore {
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief bind付excute系のSQLを実行する
-	@param[in]  $values  SQLにはバインド用の値が入っている前提
-	@return 成功すればtrue
-	*/
-	//--------------------------------------------------------------------------------------
-	protected function excute_bind_core($values){
-		global $DB_PDO;
-		if(DB_DEBUG_MODE == 1){
-			if($DB_PDO->is_display_errors()){
-				//PHPエラー出力あり
-				//PDO::ERRMODE_EXCEPTIONで例外処理
-				try{
-					$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-					$DB_PDO->beginTransaction ();
-					//ここで、$this->retarr['sql']には「:id」のようにバインドされた PHP 変数が入っている
-					$this->res = $DB_PDO->prepare($this->retarr['sql']);
-					foreach($values as $key => $val){
-						if(is_bool($val)){
-							$this->res->bindValue($key, (bool)$val, PDO::PARAM_BOOL);
-						}
-						else if(is_int($val)){
-							$this->res->bindValue($key, (int)$val, PDO::PARAM_INT);
-						}
-						else if(is_string($val)){
-							$this->res->bindValue($key, $val, PDO::PARAM_STR);
-						}
-						else{
-							$this->res->bindValue($key, $val, PDO::PARAM_STR);
-						}
-					}
-					$this->res->execute();
-					$DB_PDO->commit();
-					return true;
-				}
-				catch(Exception $e){
-					$DB_PDO->rollBack();
-					$this->retarr['error'] = $e->getMessage();
-					$this->retarr['mess'] = 'クエリが実行できません。';
-					cpdo_err::err_exit($this->retarr);
-				}
-				return false;
-			}
-		}
-		//上記以外はPDO::ERRMODE_SILENT
-		$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
-		$DB_PDO->beginTransaction();
-		$this->res = $DB_PDO->prepare($this->retarr['sql']);
-		foreach($values as $key => $val){
-			if(is_bool($val)){
-				$this->res->bindValue($key, (bool)$val, PDO::PARAM_BOOL);
-			}
-			else if(is_int($val)){
-				$this->res->bindValue($key, (int)$val, PDO::PARAM_INT);
-			}
-			else if(is_string($val)){
-				$this->res->bindValue($key, $val, PDO::PARAM_STR);
-			}
-			else{
-				$this->res->bindValue($key, $val, PDO::PARAM_STR);
-			}
-		}
-		$this->res->execute();
-		// PDOStatement::errorCode()の返り値が'00000'以外の値はエラー
-		if($this->res->errorCode() != '00000') {
-			// 失敗
-			$DB_PDO->rollBack();
-			$err_arr = $this->res->errorInfo();
-			$this->retarr['SQLSTATE_errorCode'] = $err_arr[0];
-			$this->retarr['unique_errorCode'] = $err_arr[1];
-			$this->retarr['mess'] = $err_arr[2];
-			cpdo_err::err_exit($this->retarr);
-			return false;
-		}
-		// 成功
-		$DB_PDO->commit();
-		return true;
-	}
-
-
-	//--------------------------------------------------------------------------------------
-	/*!
 	@brief  デストラクタ
 	*/
 	//--------------------------------------------------------------------------------------
@@ -386,10 +356,11 @@ class crecord extends csqlcore {
 	@param[in]  $where 条件文（省略可）
 	@param[in]  $orderby ならび順（省略可）
 	@param[in]  $limit 抽出範囲（省略可）
+	@param[in]  $values 値が入った配列（条件式等がプレースフォルダの場合）
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = ''){
+	public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = '',$values = array()){
 		global $DB_PDO;
 		$this->free_res();
 		if($orderby != ""){
@@ -405,86 +376,36 @@ where
 {$orderby}
 {$limit}
 END_BLOCK;
-		if($debug){
-			echo '<br />[sql debug]<br />';
-			echo $this->retarr['sql'];
-			echo '<br />[/sql debug]<br />';
-		}
 		//親クラスのexcute系関数を呼ぶ
-		return $this->excute_core();
-	}
-
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief  プレースフォルダ付SELECT文の実行
-	@param[in]  $debug クエリを出力するかどうか
-	@param[in]  $bind_sql プレースホルダが入ったSQL文
-	@param[in]  $values 値が入った配列
-	@return 成功すればtrue
-	*/
-	//--------------------------------------------------------------------------------------
-	public function excute_bind($debug,$bind_sql,$values){
-		global $DB_PDO;
-		$this->free_res();
-		//プレースホルダが入ったSQL文
-		$this->retarr['sql'] = $bind_sql;
+		$ret =  $this->excute_core($values);
 		if($debug){
 			echo '<br />[sql debug]<br />';
-			echo $this->retarr['sql'];
+			$this->res->debugDumpParams();
 			echo '<br />[/sql debug]<br />';
 		}
-		//親クラスのexcute_bind_core関数を呼ぶ
-		return  $this->excute_bind_core($values);
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief  select文の実行
-	@param[in]  $debug クエリを出力するかどうか
-	@param[in]  $values 値が入った配列
-	@param[in]  $columns 取得するカラム
-	@param[in]  $table 取得するテーブル
-	@param[in]  $bind_where プレースフォルダつき条件文
-	@param[in]  $orderby ならび順（省略可）
-	@param[in]  $limit 抽出範囲（省略可）
-	@return 成功すればtrue
-	*/
-	//--------------------------------------------------------------------------------------
-	public function select_bind($debug,$values,$columns,$table,$bind_where,$orderby = '',$limit = ''){
-		if($orderby != ""){
-			$orderby = "order by " . $orderby;
-		}
-		$bind_sql =<<< END_BLOCK
-select
-{$columns} 
-from
-{$table}
-where
-{$bind_where}
-{$orderby}
-{$limit}
-END_BLOCK;
-		//excute_bind関数を呼ぶ
-		return $this->excute_bind($debug,$bind_sql,$values);
+		return $ret;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief  select文のクエリ実行
 	@param[in]  $debug クエリを出力するかどうか
 	@param[in]  $sql SQL文
+	@param[in]  $values 値が入った配列（条件式等がプレースフォルダの場合）
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	public function query($debug,$sql){
+	public function query($debug,$sql,$values = array()){
 		global $DB_PDO;
 		$this->free_res();
 		$this->retarr['sql'] = $sql;
+		//親クラスのexcute系関数を呼ぶ
+		$ret =  $this->excute_core($values);
 		if($debug){
 			echo '<br />[sql debug]<br />';
-			echo $this->retarr['sql'];
+			$this->res->debugDumpParams();
 			echo '<br />[/sql debug]<br />';
 		}
-		//親クラスのexcute系関数を呼ぶ
-		return $this->excute_core();
+		return $ret;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -655,11 +576,11 @@ class cchange_ex extends csqlcore {
 	@brief  インサート
 	@param[in]  $table テーブル名
 	@param[in]  $arr 追加する項目の配列
-	@param[in]  $pkname プライマリキー名。指定するとこのフィールドの追加された値が返る。
+	@param[in]  $debug デバッグ出力
 	@return 成功すれば追加されたID。失敗は例外
 	*/
 	//--------------------------------------------------------------------------------------
-	public function insert($table,&$arr){
+	public function insert($table,&$arr,$debug = false){
 		global $DB_PDO;
 		//空の配列を代入
 		$this->retarr = array();
@@ -680,8 +601,9 @@ class cchange_ex extends csqlcore {
 		}
 		$sqlarr .= ") values (";
 		$count = 1;
+		//プレイスフォルダの作成
 		foreach($arr as $i => $value){
-			$sqlarr .=  $this->make_safe_sqlstr($value);
+			$sqlarr .= ":" . $i;
 			if($size > $count){
 				$sqlarr .= ",";
 			}
@@ -693,8 +615,23 @@ insert into
 {$table}
 {$sqlarr}
 END_BLOCK;
-		//親クラスのexec系関数を呼ぶ
-		return $this->exec_core(true);
+		//データの作成
+		$values = array();
+		foreach($arr as $key => $val){
+			$values[":" . $key] = $val;
+		}
+		//親クラスのexcute_core関数を呼ぶ
+		$ret = $this->excute_core($values,true);
+		if($ret){
+			$ret = $this->retarr['lastinsert'];
+		}
+		if($debug){
+			echo '<br />[sql debug]<br />';
+			$this->res->debugDumpParams();
+			echo '<br />[/sql debug]<br />';
+		}
+		//失敗したら終了そうでなければ影響を受けた行数
+		return $ret;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -744,10 +681,11 @@ END_BLOCK;
 	@param[in]  $table テーブル名
 	@param[in]  $arr 更新する項目の配列
 	@param[in]  $where 条件
-	@return 成功すれば更新したレコード数。失敗は例外
+	@param[in]  $debug デバッグ出力
+	@return 失敗したら終了そうでなければ影響を受けた行数
 	*/
 	//--------------------------------------------------------------------------------------
-	public function update($table,&$arr,$where){
+	public function update($table,&$arr,$where,$debug = false){
 		global $DB_PDO;
 		//空の配列を代入
 		$this->retarr = array();
@@ -759,8 +697,9 @@ END_BLOCK;
 		$size = count($arr);
 		$count = 1;
 		$sqlarr = '';
+		//プレイスフォルダの作成
 		foreach($arr as $i => $value){
-			$sqlarr .=  $i . " = " . $this->make_safe_sqlstr($value);
+			$sqlarr .=  $i . " = " . ":" . $i;
 			if($size > $count){
 				$sqlarr .= ",";
 			}
@@ -774,8 +713,23 @@ set
 where
 {$where}
 END_BLOCK;
-		//親クラスのexec系関数を呼ぶ
-		return $this->exec_core(false);
+		//データの作成
+		$values = array();
+		foreach($arr as $key => $val){
+			$values[":" . $key] = $val;
+		}
+		//親クラスのexcute_core関数を呼ぶ
+		$ret = $this->excute_core($values);
+		if($ret){
+			$ret = $this->res->rowCount();
+		}
+		if($debug){
+			echo '<br />[sql debug]<br />';
+			$this->res->debugDumpParams();
+			echo '<br />[/sql debug]<br />';
+		}
+		//失敗したら終了そうでなければ影響を受けた行数
+		return $ret;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -820,10 +774,12 @@ END_BLOCK;
 	@brief  削除
 	@param[in]  $table テーブル名
 	@param[in]  $where 条件
+	@param[in]  $values プレイスフォルダを使う場合のデータ
+	@param[in]  $debug デバッグ出力
 	@return 成功すれば削除したレコード数。失敗は例外
 	*/
 	//--------------------------------------------------------------------------------------
-	public function delete($table,$where){
+	public function delete($table,$where,$values = array(),$debug = false){
 		global $DB_PDO;
 		//空の配列を代入
 		$this->retarr = array();
@@ -839,8 +795,17 @@ from
 where
 {$where}
 END_BLOCK;
-		//親クラスのexec系関数を呼ぶ
-		return $this->exec_core(false);
+		//親クラスのexcute系関数を呼ぶ
+		$ret =  $this->excute_core($values);
+		if($ret){
+			$ret = $this->res->rowCount();
+		}
+		if($debug){
+			echo '<br />[sql debug]<br />';
+			$this->res->debugDumpParams();
+			echo '<br />[/sql debug]<br />';
+		}
+		return $ret;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!

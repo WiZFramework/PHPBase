@@ -163,7 +163,7 @@ class cutil {
 		for ($i = 1; $i <= 8; $i++){
 			$seed .= substr('0123456789abcdef',rand(0,15),1);
 		}
-		return md5($seed . $password) . $seed;
+		return hash("md5",$seed . $password) . $seed;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -175,7 +175,7 @@ class cutil {
 	//--------------------------------------------------------------------------------------
 	public static function pw_check($password,$stored_value){
 		$stored_seed = substr($stored_value,32,8);
-		if(md5($stored_seed . $password) . $stored_seed == $stored_value){
+		if(hash("md5",$stored_seed . $password) . $stored_seed == $stored_value){
 			return true;
 		}
 		else{
