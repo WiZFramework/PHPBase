@@ -52,13 +52,13 @@ class cpasswordtextbox
 					$spval2 .= $this->m_conf_char;
 				}
 			}
-			$str =<<<END_BLOCK
+			$str =<<< END_BLOCK
 <span style="font-weight: bold;">{$spval2}</span>
 <input type="hidden" name="{$this->m_name }" value="{$spval}" />
 END_BLOCK;
 		}
 		else{
-			$str =<<<END_BLOCK
+			$str =<<< END_BLOCK
 <input type="password" name="{$this->m_name }" {$this->m_extstr} value="{$spval}" />{$input_last_str}
 END_BLOCK;
 		}
@@ -110,13 +110,13 @@ class cinputdate
 		$spval = cutil::escape($this->m_value);
 		if($conf){
 			//conf
-			$str =<<<END_BLOCK
+			$str =<<< END_BLOCK
 <span style="font-weight: bold;">{$spval}</span>
 <input type="hidden" name="{$this->m_name }" value="{$spval}" />
 END_BLOCK;
 		}
 		else{
-$str =<<<END_BLOCK
+$str =<<< END_BLOCK
 <input type="date" name="{$this->m_name }" {$this->m_extstr} value="{$spval}" />{$input_last_str}
 END_BLOCK;
 		}
@@ -208,7 +208,7 @@ class cselect_ex
 					$spval = cutil::escape($this->m_valueArr[$i][1]);
 					$splaststr = cutil::escape($this->m_valueArr[$i][2]);
 					if($this->m_valueArr[$i][3]){
-						$retbase =<<<END_BLOCK
+						$retbase =<<< END_BLOCK
 <span style="font-weight: bold;">{$splaststr}</span>
 <input type="hidden" name="{$this->m_name }" value="{$spval}" />
 END_BLOCK;
@@ -222,19 +222,19 @@ END_BLOCK;
 				if($nullshowstr != ""){
 					$nullstr = cutil::escape($nullshowstr);
 				}
-				$retstr =<<<END_BLOCK
+				$retstr =<<< END_BLOCK
 {$nullstr}
 <input type="hidden" name="{$this->m_name}" value="{$nullvalue}" />
 END_BLOCK;
 				}
 			}
 			else{
-				$retstr =<<<END_BLOCK
+				$retstr =<<< END_BLOCK
 <select name="{$this->m_name }" {$this->m_extstr} >
 END_BLOCK;
 				$defoption = "";
 				if($nullstr != ""){
-				$defoption =<<<END_BLOCK
+				$defoption =<<< END_BLOCK
 <option value="{$nullvalue}">{$nullstr}</option>
 END_BLOCK;
 			}
@@ -249,7 +249,7 @@ END_BLOCK;
 					if($this->m_valueArr[$i][3]){
 						$selectstr = ' selected="selected" ';
 					}
-					$str =<<<END_BLOCK
+					$str =<<< END_BLOCK
 <option value="{$spval}" {$selectstr} >{$splaststr}</option>
 END_BLOCK;
 					$retstr .= $str;
@@ -258,13 +258,13 @@ END_BLOCK;
 					//グループ開始
 					$spgloup = cutil::escape($this->m_valueArr[$i][1]);
 					$spex = cutil::escape($this->m_valueArr[$i][2]);
-					$str =<<<END_BLOCK
+					$str =<<< END_BLOCK
 <optgroup label="{$spgloup}" {$spex} >
 END_BLOCK;
 					$retstr .= $str;
 				}
 				else if($this->m_valueArr[$i][0] == 2){
-					$str =<<<END_BLOCK
+					$str =<<< END_BLOCK
 </optgroup>
 END_BLOCK;
 					$retstr .= $str;
@@ -288,4 +288,5 @@ END_BLOCK;
 		echo $this->get($conf,$nullvalue,$nullstr,$nullshowstr);
 	}
 }
-?>
+
+

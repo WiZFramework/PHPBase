@@ -39,13 +39,13 @@ class ctextbox
 		$spval = cutil::escape($this->m_value);
 		if($conf){
 			//conf
-			$str =<<<END_BLOCK
+			$str =<<< END_BLOCK
 <span style="font-weight: bold;">{$spval}</span>
 <input type="hidden" name="{$this->m_name }" value="{$spval}" />
 END_BLOCK;
 		}
 		else{
-$str =<<<END_BLOCK
+$str =<<< END_BLOCK
 <input type="text" name="{$this->m_name }" {$this->m_extstr} value="{$spval}" />{$input_last_str}
 END_BLOCK;
 		}
@@ -125,7 +125,7 @@ class cselect
 				$spval = cutil::escape($this->m_valueArr[$i][0]);
 				$splaststr = cutil::escape($this->m_valueArr[$i][1]);
 				if($this->m_valueArr[$i][2]){
-					$retbase =<<<END_BLOCK
+					$retbase =<<< END_BLOCK
 <span style="font-weight: bold;">{$splaststr}</span>
 <input type="hidden" name="{$this->m_name }" value="{$spval}" />
 END_BLOCK;
@@ -138,19 +138,19 @@ END_BLOCK;
 				if($nullshowstr != ""){
 					$nullstr = cutil::escape($nullshowstr);
 				}
-				$retstr =<<<END_BLOCK
+				$retstr =<<< END_BLOCK
 {$nullstr}
 <input type="hidden" name="{$this->m_name}" value="{$nullvalue}" />
 END_BLOCK;
 			}
 		}
 		else{
-			$retstr =<<<END_BLOCK
+			$retstr =<<< END_BLOCK
 <select name="{$this->m_name }" {$this->m_extstr} >
 END_BLOCK;
 			$defoption = "";
 			if($nullstr != ""){
-				$defoption =<<<END_BLOCK
+				$defoption =<<< END_BLOCK
 <option value="{$nullvalue}">{$nullstr}</option>
 END_BLOCK;
 			}
@@ -164,7 +164,7 @@ END_BLOCK;
 				if($this->m_valueArr[$i][2]){
 					$selectstr = ' selected="selected" ';
 				}
-				$str =<<<END_BLOCK
+				$str =<<< END_BLOCK
 <option value="{$spval}" {$selectstr} >{$splaststr}</option>
 END_BLOCK;
 				$retstr .= $str;
@@ -220,13 +220,13 @@ class ctextarea
 		$spbrval = cutil::ret2br($spval);
 		if($conf){
 			//conf
-			$str =<<<END_BLOCK
+			$str =<<< END_BLOCK
 <span style="font-weight: bold;">{$spbrval}</span>
 <input type="hidden" name="{$this->m_name }" value="{$spval}" />
 END_BLOCK;
 		}
 		else{
-			$str =<<<END_BLOCK
+			$str =<<< END_BLOCK
 <textarea name="{$this->m_name }" {$this->m_extstr} >{$spval}</textarea>
 END_BLOCK;
 		}
@@ -306,7 +306,7 @@ class cchkbox
 				$spval = cutil::escape($this->m_valueArr[$i][0]);
 				$splaststr = cutil::escape($this->m_valueArr[$i][1]);
 				if($this->m_valueArr[$i][2]){
-					$retbase =<<<END_BLOCK
+					$retbase =<<< END_BLOCK
 <span style="font-weight: bold;">{$splaststr}</span>
 <input type="hidden" name="{$this->m_name}" value="{$spval}" />
 END_BLOCK;
@@ -330,7 +330,7 @@ END_BLOCK;
 					$checkstr = ' checked="checked" ';
 				}
 				$attstr = $this->m_valueArr[$i][3];
-				$str =<<<END_BLOCK
+				$str =<<< END_BLOCK
 <input type="checkbox" name="{$this->m_name}" value="{$spval}" {$attstr} {$checkstr} />{$splaststr}
 END_BLOCK;
 				if($rowcount != count($this->m_valueArr)){
@@ -429,7 +429,7 @@ class cradio
 					$nextstr = $this->m_valueArr[$i][5];
 				}
 				if($this->m_valueArr[$i][2]){
-					$retbase =<<<END_BLOCK
+					$retbase =<<< END_BLOCK
 {$prevstr}
 <span style="font-weight: bold;">{$splaststr}</span>
 <input type="hidden" name="{$this->m_name }" value="{$spval}" />
@@ -465,7 +465,7 @@ END_BLOCK;
 				if($nextflg){
 					$nextstr = $this->m_valueArr[$i][5];
 				}
-				$str =<<<END_BLOCK
+				$str =<<< END_BLOCK
 {$prevstr}
 <input type="radio" name="{$this->m_name }" value="{$spval}" {$attstr} {$checkstr} />{$splaststr}
 {$nextstr}
@@ -546,7 +546,7 @@ class cpager
 				$str .=  $i;
 			}
 			else{
-				$temp =<<<END_BLOCK
+				$temp =<<< END_BLOCK
 <a href="{$this->m_base_uri}{$pageparam}={$i}" {$att}>{$i}</a>
 END_BLOCK;
 				$str .= $temp;
@@ -573,4 +573,4 @@ END_BLOCK;
 		echo $this->get($pageparam,$tgt_page,$delimiter,$first_ex,$last_ex,$att);
 	}
 }
-?>
+

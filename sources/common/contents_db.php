@@ -287,5 +287,3 @@ member.prefecture_id = prefecture.prefecture_id"	//条件
 }
 
 
-
-?>

@@ -213,7 +213,7 @@ class cutil {
 		if($brflg){
 			$retcode = '<br />';
 		}
-		$str =<<<END_BLOCK
+		$str =<<< END_BLOCK
 {$retcode}
 --start-----mb_send_mail_chk--------------{$retcode}
 To: {$To}{$retcode}
@@ -227,4 +227,3 @@ END_BLOCK;
 	}
 }
 
-?>

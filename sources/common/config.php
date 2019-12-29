@@ -29,4 +29,4 @@ define('SITE_BASE_URL','/sources/');
 //デバッグでない場合のエラー時のリダイレクト先
 define('DB_ERR_REDIRECT_URL',SITE_BASE_URL . 'errpage.php');
 
-?>
+

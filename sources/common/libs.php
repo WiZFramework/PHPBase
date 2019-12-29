@@ -16,4 +16,4 @@ require_once("contents_func.php");
 //このコンテンツ独自の
 //DBの継承クラスの定義
 require_once("contents_db.php");
-?>
+
