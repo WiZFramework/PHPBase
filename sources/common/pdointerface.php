@@ -2,7 +2,7 @@
 /*!
 @file pdointerface.php
 @brief PDOのインターフェイス
-@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
+@copyright Copyright (c) 2017 Yamanoi Yasushi.
 */
 
 ////////////////////////////////////
@@ -53,7 +53,6 @@ class cpdo_err {
 /// PDOクラス
 //--------------------------------------------------------------------------------------
 class cpdo extends PDO{
-	private $m_display_errors = false;
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief  コンストラクタ
@@ -71,22 +70,9 @@ class cpdo extends PDO{
 				$this->exec("SET NAMES " . DB_CHARSET);
 				$this->commit();
 			}
-			if(ini_get('display_errors')){
-				$this->m_display_errors = true;
-			}
-			$this->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 		} catch (PDOException $e){
 			cpdo_err::err_exit('接続できません: ' . $e->getMessage());
 		}
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief  display_errorsかどうかをチェックする
-	@return display_errorsならtrue
-	*/
-	//--------------------------------------------------------------------------------------
-	public function is_display_errors(){
-		return $this->m_display_errors;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -156,172 +142,14 @@ class csqlcore {
 		$retstr = "";
 		switch(gettype($value)){
 			case "string":
-				$retstr = $DB_PDO->quote("%{$value}%");
+				$retstr = "'%" 
+				. $DB_PDO->quote($value)
+				. "%'";
 			break;
 			default:
 			break;
 		}
 		return $retstr;
-	}
-
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief excute系のSQLを実行する
-	@param[in]  $values  SQLにはバインド用の値が入っている前提
-	@return 成功すればtrue
-	*/
-	//--------------------------------------------------------------------------------------
-	protected function excute_core($values = array(),$is_insert = false){
-		global $DB_PDO;
-		if(DB_DEBUG_MODE == 1){
-			if($DB_PDO->is_display_errors()){
-				//PHPエラー出力あり
-				//PDO::ERRMODE_EXCEPTIONで例外処理
-				try{
-					$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-					$DB_PDO->beginTransaction ();
-					$this->res = $DB_PDO->prepare($this->retarr['sql']);
-					if(is_array($values) && count($values) > 0){
-						foreach($values as $key => $val){
-							if(is_int($val)){
-								$param = PDO::PARAM_INT;
-							}
-							elseif(is_bool($val)){
-								$param = PDO::PARAM_BOOL;
-							}
-							elseif(is_null($val)){
-								$param = PDO::PARAM_NULL;
-							}
-							elseif(is_string($val)){
-								$param = PDO::PARAM_STR;
-							}
-							else{
-								$param = FALSE;
-							}
-							if($param){
-								$this->res->bindValue($key, $val, $param);
-							}
-						}
-					}
-					$this->res->execute();
-					if($is_insert){
-						$this->retarr['lastinsert'] = $DB_PDO->lastInsertId();
-					}
-					$DB_PDO->commit();
-					return true;
-				}
-				catch(Exception $e){
-					$DB_PDO->rollBack();
-					$this->retarr['error'] = $e->getMessage();
-					$this->retarr['mess'] = 'クエリが実行できません。';
-					cpdo_err::err_exit($this->retarr);
-				}
-				return false;
-			}
-		}
-		//上記以外はPDO::ERRMODE_SILENT
-		$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
-		$DB_PDO->beginTransaction();
-		$this->res = $DB_PDO->prepare($this->retarr['sql']);
-		if(is_array($values) && count($values) > 0){
-			foreach($values as $key => $val){
-				if(is_int($val)){
-					$param = PDO::PARAM_INT;
-				}
-				elseif(is_bool($val)){
-					$param = PDO::PARAM_BOOL;
-				}
-				elseif(is_null($val)){
-					$param = PDO::PARAM_NULL;
-				}
-				elseif(is_string($val)){
-					$param = PDO::PARAM_STR;
-				}
-				else{
-					$param = FALSE;
-				}
-				if($param){
-					$this->res->bindValue($key, $val, $param);
-				}
-			}
-		}
-		$this->res->execute();
-		// PDOStatement::errorCode()の返り値が'00000'以外の値はエラー
-		if($this->res->errorCode() != '00000') {
-			// 失敗
-			$DB_PDO->rollBack();
-			$err_arr = $this->res->errorInfo();
-			$this->retarr['SQLSTATE_errorCode'] = $err_arr[0];
-			$this->retarr['unique_errorCode'] = $err_arr[1];
-			$this->retarr['mess'] = $err_arr[2];
-			cpdo_err::err_exit($this->retarr);
-			return false;
-		}
-		if($is_insert){
-			$this->retarr['lastinsert'] = $DB_PDO->lastInsertId();
-		}
-		// 成功
-		$DB_PDO->commit();
-		return true;
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief exec系のSQLを実行する
-	@param[in]  $insert_flg  インサートかどうか
-	@return インサートの場合は挿入されたPK、それ以外は影響したレコードの数
-	*/
-	//--------------------------------------------------------------------------------------
-	protected function exec_core($insert_flg){
-		global $DB_PDO;
-		if(DB_DEBUG_MODE == 1){
-			if($DB_PDO->is_display_errors()){
-				try{
-					$DB_PDO->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-					$DB_PDO->beginTransaction ();
-					$retcode = $DB_PDO->exec($this->retarr['sql']);
-					if($insert_flg){
-						$insertid = $DB_PDO->lastInsertId();
-						$DB_PDO->commit();
-						return $insertid;
-					}
-					else{
-						$DB_PDO->commit();
-						return $retcode;
-					}
-				}
-				catch(Exception $e){
-					$DB_PDO->rollBack();
-					$this->retarr['error'] = $e->getMessage();
-					$this->retarr['mess'] = 'クエリが実行できません。';
-					cpdo_err::err_exit($this->retarr);
-				}
-				return 0;
-			}
-		}
-		//上記以外はPDO::ERRMODE_SILENT
-		$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
-		$DB_PDO->beginTransaction();
-		$retcode = $DB_PDO->exec($this->retarr['sql']);
-		if($retcode === false) {
-			// 失敗
-			$DB_PDO->rollBack();
-			$err_arr = $DB_PDO->errorInfo();
-			$this->retarr['SQLSTATE_errorCode'] = $err_arr[0];
-			$this->retarr['unique_errorCode'] = $err_arr[1];
-			$this->retarr['mess'] = $err_arr[2];
-			cpdo_err::err_exit($this->retarr);
-			return 0;
-		}
-		// 成功
-		if($insert_flg){
-			$insertid = $DB_PDO->lastInsertId();
-			$DB_PDO->commit();
-			return $insertid;
-		}
-		else{
-			$DB_PDO->commit();
-			return $retcode;
-		}
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -359,7 +187,6 @@ class crecord extends csqlcore {
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	//,$limit = ''
 	public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = ''){
 		global $DB_PDO;
 		$this->free_res();
@@ -599,62 +426,59 @@ class cchange_ex extends csqlcore {
 	@brief  インサート
 	@param[in]  $table テーブル名
 	@param[in]  $arr 追加する項目の配列
-	@param[in]  $debug デバッグ出力
+	@param[in]  $pkname プライマリキー名。指定するとこのフィールドの追加された値が返る。
 	@return 成功すれば追加されたID。失敗は例外
 	*/
 	//--------------------------------------------------------------------------------------
-	public function insert($table,&$arr,$debug = false){
+	public function insert($table,&$arr){
 		global $DB_PDO;
-		//空の配列を代入
-		$this->retarr = array();
-		if($table == '' || !is_array($arr) || count($arr) < 1){
-			$this->retarr['mess'] = '追加すべきデータがありません。';
-			cpdo_err::err_exit($this->retarr);
-		}
-		//追加するsql文を動的につくり出す
-		$sqlarr = "(";
-		$size = count($arr);
-		$count = 1;
-		foreach($arr as $i => $value){
-			$sqlarr .=  $i;
-			if($size > $count){
-				$sqlarr .= ",";
+		try{
+			//空の配列を代入
+			$this->retarr = array();
+			if($table == '' || !is_array($arr) || count($arr) < 1){
+				$this->retarr['mess'] = '追加すべきデータがありません。';
+				cpdo_err::err_exit($this->retarr);
 			}
-			$count++;
-		}
-		$sqlarr .= ") values (";
-		$count = 1;
-		//プレイスフォルダの作成
-		foreach($arr as $i => $value){
-			$sqlarr .= ":" . $i;
-			if($size > $count){
-				$sqlarr .= ",";
+			//追加するsql文を動的につくり出す
+			$sqlarr = "(";
+			$size = count($arr);
+			$count = 1;
+			foreach($arr as $i => $value){
+				$sqlarr .=  $i;
+				if($size > $count){
+					$sqlarr .= ",";
+				}
+				$count++;
 			}
-			$count++;
-		}
-		$sqlarr .= ")";
-		$this->retarr['sql'] =<<< END_BLOCK
+			$sqlarr .= ") values (";
+			$count = 1;
+			foreach($arr as $i => $value){
+				$sqlarr .=  $this->make_safe_sqlstr($value);
+				if($size > $count){
+					$sqlarr .= ",";
+				}
+				$count++;
+			}
+			$sqlarr .= ")";
+			$this->retarr['sql'] =<<<END_BLOCK
 insert into
 {$table}
 {$sqlarr}
 END_BLOCK;
-		//データの作成
-		$values = array();
-		foreach($arr as $key => $val){
-			$values[":" . $key] = $val;
+			$DB_PDO->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$DB_PDO->beginTransaction ();
+			$DB_PDO->exec($this->retarr['sql']);
+			$insertid = $DB_PDO->lastInsertId();
+			$DB_PDO->commit();
+			return $insertid;
 		}
-		//親クラスのexcute_core関数を呼ぶ
-		$ret = $this->excute_core($values,true);
-		if($ret){
-			$ret = $this->retarr['lastinsert'];
+		catch(Exception $e){
+			$DB_PDO->rollBack();
+			$this->retarr['error'] = $e->getMessage();
+			$this->retarr['mess'] = 'クエリが実行できません。';
+			cpdo_err::err_exit($this->retarr);
 		}
-		if($debug){
-			echo '<br />[sql debug]<br />';
-			$this->res->debugDumpParams();
-			echo '<br />[/sql debug]<br />';
-		}
-		//失敗したら終了そうでなければ影響を受けた行数
-		return $ret;
+		return 0;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -690,7 +514,7 @@ END_BLOCK;
 			$count++;
 		}
 		$sqlarr .= ")";
-		$sql =<<< END_BLOCK
+		$sql =<<<END_BLOCK
 insert into
 {$table}
 {$sqlarr}
@@ -704,31 +528,30 @@ END_BLOCK;
 	@param[in]  $table テーブル名
 	@param[in]  $arr 更新する項目の配列
 	@param[in]  $where 条件
-	@param[in]  $debug デバッグ出力
-	@return 失敗したら終了そうでなければ影響を受けた行数
+	@return 成功すれば更新したレコード数。失敗は例外
 	*/
 	//--------------------------------------------------------------------------------------
-	public function update($table,&$arr,$where,$debug = false){
+	public function update($table,&$arr,$where){
 		global $DB_PDO;
-		//空の配列を代入
-		$this->retarr = array();
-		if($table == '' || !is_array($arr) || count($arr) < 1
-			|| $where == ''){
-			$this->retarr['mess'] = '更新すべきデータがありません。';
-			cpdo_err::err_exit($this->retarr);
-		}
-		$size = count($arr);
-		$count = 1;
-		$sqlarr = '';
-		//プレイスフォルダの作成
-		foreach($arr as $i => $value){
-			$sqlarr .=  $i . " = " . ":" . $i;
-			if($size > $count){
-				$sqlarr .= ",";
+		try{
+			//空の配列を代入
+			$this->retarr = array();
+			if($table == '' || !is_array($arr) || count($arr) < 1
+				|| $where == ''){
+				$this->retarr['mess'] = '更新すべきデータがありません。';
+				cpdo_err::err_exit($this->retarr);
 			}
-			$count++;
-		}
-		$this->retarr['sql'] =<<< END_BLOCK
+			$size = count($arr);
+			$count = 1;
+			$sqlarr = '';
+			foreach($arr as $i => $value){
+				$sqlarr .=  $i . " = " . $this->make_safe_sqlstr($value);
+				if($size > $count){
+					$sqlarr .= ",";
+				}
+				$count++;
+			}
+			$this->retarr['sql'] =<<<END_BLOCK
 update
 {$table}
 set
@@ -736,23 +559,19 @@ set
 where
 {$where}
 END_BLOCK;
-		//データの作成
-		$values = array();
-		foreach($arr as $key => $val){
-			$values[":" . $key] = $val;
+			$DB_PDO->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$DB_PDO->beginTransaction ();
+			$upcount = $DB_PDO->exec($this->retarr['sql']);
+			$DB_PDO->commit();
+			return $upcount;
 		}
-		//親クラスのexcute_core関数を呼ぶ
-		$ret = $this->excute_core($values);
-		if($ret){
-			$ret = $this->res->rowCount();
+		catch(Exception $e){
+			$DB_PDO->rollBack();
+			$this->retarr['error'] = $e->getMessage();
+			$this->retarr['mess'] = 'クエリが実行できません。';
+			cpdo_err::err_exit($this->retarr);
 		}
-		if($debug){
-			echo '<br />[sql debug]<br />';
-			$this->res->debugDumpParams();
-			echo '<br />[/sql debug]<br />';
-		}
-		//失敗したら終了そうでなければ影響を受けた行数
-		return $ret;
+		return 0;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -781,7 +600,7 @@ END_BLOCK;
 			}
 			$count++;
 		}
-		$sql =<<< END_BLOCK
+		$sql =<<<END_BLOCK
 update
 {$table}
 set
@@ -797,38 +616,38 @@ END_BLOCK;
 	@brief  削除
 	@param[in]  $table テーブル名
 	@param[in]  $where 条件
-	@param[in]  $values プレイスフォルダを使う場合のデータ
-	@param[in]  $debug デバッグ出力
 	@return 成功すれば削除したレコード数。失敗は例外
 	*/
 	//--------------------------------------------------------------------------------------
-	public function delete($table,$where,$values = array(),$debug = false){
+	public function delete($table,$where){
 		global $DB_PDO;
-		//空の配列を代入
-		$this->retarr = array();
-		if($table == '' || $where == ''){
-			$this->retarr['mess'] = '削除すべきデータがありません。';
-			cpdo_err::err_exit($this->retarr);
-			return 0;
-		}
-		$this->retarr['sql'] =<<< END_BLOCK
+		try{
+			//空の配列を代入
+			$this->retarr = array();
+			if($table == '' || $where == ''){
+				$this->retarr['mess'] = '削除すべきデータがありません。';
+				cpdo_err::err_exit($this->retarr);
+			}
+			$this->retarr['sql'] =<<<END_BLOCK
 delete
 from
 {$table}
 where
 {$where}
 END_BLOCK;
-		//親クラスのexcute系関数を呼ぶ
-		$ret =  $this->excute_core($values);
-		if($ret){
-			$ret = $this->res->rowCount();
+			$DB_PDO->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$DB_PDO->beginTransaction ();
+			$upcount = $DB_PDO->exec($this->retarr['sql']);
+			$DB_PDO->commit();
+			return $upcount;
 		}
-		if($debug){
-			echo '<br />[sql debug]<br />';
-			$this->res->debugDumpParams();
-			echo '<br />[/sql debug]<br />';
+		catch(Exception $e){
+			$DB_PDO->rollBack();
+			$this->retarr['error'] = $e->getMessage();
+			$this->retarr['mess'] = 'クエリが実行できません。';
+			cpdo_err::err_exit($this->retarr);
 		}
-		return $ret;
+		return 0;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -845,7 +664,7 @@ END_BLOCK;
 			$this->retarr['mess'] = '削除すべきデータがありません。';
 			cpdo_err::err_exit($this->retarr);
 		}
-		$sql =<<< END_BLOCK
+		$sql =<<<END_BLOCK
 delete
 from
 {$table}
@@ -864,20 +683,30 @@ END_BLOCK;
 	//--------------------------------------------------------------------------------------
 	public function delete_table($table){
 		global $DB_PDO;
-		//空の配列を代入
-		$this->retarr = array();
-		if($table == ''){
-			$this->retarr['mess'] = '削除すべきテーブルがありません。';
-			cpdo_err::err_exit($this->retarr);
-			return 0;
-		}
-		$this->retarr['sql'] =<<< END_BLOCK
+		try{
+			//空の配列を代入
+			$this->retarr = array();
+			if($table == ''){
+				$this->retarr['mess'] = '削除すべきテーブルがありません。';
+				cpdo_err::err_exit($this->retarr);
+			}
+		$this->retarr['sql'] =<<<END_BLOCK
 delete
 from
 {$table}
 END_BLOCK;
-		//親クラスのexec系関数を呼ぶ
-		return $this->exec_core(false);
+			$DB_PDO->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$DB_PDO->beginTransaction ();
+			$upcount = $DB_PDO->exec($this->retarr['sql']);
+			$DB_PDO->commit();
+			return $upcount;
+		}
+		catch(Exception $e){
+			$DB_PDO->rollBack();
+			$this->retarr['error'] = $e->getMessage();
+			$this->retarr['mess'] = 'クエリが実行できません。';
+			cpdo_err::err_exit($this->retarr);
+		}
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -893,7 +722,7 @@ END_BLOCK;
 			$this->retarr['mess'] = '削除すべきテーブルがありません。';
 			cpdo_err::err_exit($this->retarr);
 		}
-		$sql =<<< END_BLOCK
+		$sql =<<<END_BLOCK
 delete
 from
 {$table}
@@ -910,9 +739,26 @@ END_BLOCK;
 	//--------------------------------------------------------------------------------------
 	public function exec($sql){
 		global $DB_PDO;
-		$this->retarr['sql'] = $sql;
-		//親クラスのexec系関数を呼ぶ
-		return $this->exec_core(false);
+		try{
+			//空の配列を代入
+			$this->retarr = array();
+			if($sql == ''){
+				$this->retarr['mess'] = '実行すべきSQLがありません。';
+				cpdo_err::err_exit($this->retarr);
+			}
+			$this->retarr['sql'] = $sql;
+			$DB_PDO->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$DB_PDO->beginTransaction ();
+			$retcode = $DB_PDO->exec($this->retarr['sql']);
+			$DB_PDO->commit();
+			return $retcode;
+		}
+		catch(Exception $e){
+			$DB_PDO->rollBack();
+			$this->retarr['error'] = $e->getMessage();
+			$this->retarr['mess'] = 'クエリが実行できません。';
+			cpdo_err::err_exit($this->retarr);
+		}
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -946,3 +792,4 @@ END_BLOCK;
 
 //▲▲▲▲▲▲クラスブロック▲▲▲▲▲▲
 
+?>
