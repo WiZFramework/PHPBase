@@ -356,17 +356,17 @@ class crecord extends csqlcore {
 	@param[in]  $where 条件文（省略可）
 	@param[in]  $orderby ならび順（省略可）
 	@param[in]  $limit 抽出範囲（省略可）
-	@param[in]  $values 値が入った配列（条件式等がプレースフォルダの場合）
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = '',$values = array()){
+	//,$limit = ''
+	public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = ''){
 		global $DB_PDO;
 		$this->free_res();
 		if($orderby != ""){
 			$orderby = "order by " . $orderby;
 		}
-		$this->retarr['sql'] =<<< END_BLOCK
+		$this->retarr['sql'] =<<<END_BLOCK
 select
 {$columns} 
 from
@@ -376,36 +376,59 @@ where
 {$orderby}
 {$limit}
 END_BLOCK;
-		//親クラスのexcute系関数を呼ぶ
-		$ret =  $this->excute_core($values);
 		if($debug){
 			echo '<br />[sql debug]<br />';
-			$this->res->debugDumpParams();
+			echo $this->retarr['sql'];
 			echo '<br />[/sql debug]<br />';
 		}
-		return $ret;
+		try{
+			$DB_PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$DB_PDO->beginTransaction ();
+			$this->res = $DB_PDO->prepare($this->retarr['sql']);
+			$this->res->execute();
+			$DB_PDO->commit();
+			return true;
+		}
+		catch(Exception $e){
+			$DB_PDO->rollBack();
+			$this->retarr['error'] = $e->getMessage();
+			$this->retarr['mess'] = 'クエリが実行できません。';
+			cpdo_err::err_exit($this->retarr);
+		}
+		return false;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief  select文のクエリ実行
+	@brief  クエリ実行
 	@param[in]  $debug クエリを出力するかどうか
 	@param[in]  $sql SQL文
-	@param[in]  $values 値が入った配列（条件式等がプレースフォルダの場合）
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	public function query($debug,$sql,$values = array()){
+	public function query($debug,$sql){
 		global $DB_PDO;
 		$this->free_res();
 		$this->retarr['sql'] = $sql;
-		//親クラスのexcute系関数を呼ぶ
-		$ret =  $this->excute_core($values);
 		if($debug){
 			echo '<br />[sql debug]<br />';
-			$this->res->debugDumpParams();
+			echo $this->retarr['sql'];
 			echo '<br />[/sql debug]<br />';
 		}
-		return $ret;
+		try{
+			$DB_PDO->setAttribute (PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$DB_PDO->beginTransaction ();
+			$this->res = $DB_PDO->prepare($this->retarr['sql']);
+			$this->res->excute();
+			$DB_PDO->commit();
+			return true;
+		}
+		catch(Exception $e){
+			$DB_PDO->rollBack();
+			$this->retarr['error'] = $e->getMessage();
+			$this->retarr['mess'] = 'クエリが実行できません。';
+			cpdo_err::err_exit($this->retarr);
+		}
+		return false;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
