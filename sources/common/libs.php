@@ -3,7 +3,7 @@
 @file libs.php
 @brief ライブラリをすべてインクルード。<br />
 各ページはこのファイルをインクルードする
-@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
+@copyright Copyright (c) 2021 Yamanoi Yasushi.
 */
 //ユーティリティクラス他
 require_once("function.php");

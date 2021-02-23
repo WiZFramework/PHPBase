@@ -2,7 +2,7 @@
 /*!
 @file config.php
 @brief DB接続変数と、エンコードの定義
-@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
+@copyright Copyright (c) 2021 Yamanoi Yasushi.
 */
 ////////////////////////////////////
 //実行ブロック
@@ -22,11 +22,5 @@ define('DB_NAME','********');
 define('DB_CHARSET','utf8');
 //PHPのキャラセット
 define('PHP_CHARSET','UTF-8');
-//デバッグかどうか
-define('DB_DEBUG_MODE','1');
-//サイトのルートからのパス
-define('SITE_BASE_URL','/sources/');
-//デバッグでない場合のエラー時のリダイレクト先
-define('DB_ERR_REDIRECT_URL',SITE_BASE_URL . 'errpage.php');
 
 

@@ -2,7 +2,7 @@
 /*!
 @file function.php
 @brief ユーティリティクラス
-@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
+@copyright Copyright (c) 2021 Yamanoi Yasushi.
 */
 
 //定数の読み込み

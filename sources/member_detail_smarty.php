@@ -2,7 +2,7 @@
 /*!
 @file member_detail_smarty.php
 @brief メンバー詳細(Smarty版)
-@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
+@copyright Copyright (c) 2021 Yamanoi Yasushi.
 */
 
 /////////////////////////////////////////////////////////////////

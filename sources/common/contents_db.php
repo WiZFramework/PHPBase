@@ -2,7 +2,7 @@
 /*!
 @file contents_db.php
 @brief 
-@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
+@copyright Copyright (c) 2021 Yamanoi Yasushi.
 */
 //PDO接続初期化
 require_once("pdointerface.php");
