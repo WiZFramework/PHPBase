@@ -1,6 +1,7 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta charset="utf-8">
 <link href="css/main.css" rel="stylesheet" type="text/css">
 <title>PHPBaseドキュメント</title>
 </head>
@@ -38,6 +39,7 @@
     </ul>
     </li>
 </ul>
+<br/>
 　このうち赤くなっているファイルは<strong>環境に合わせて</strong>あるいは<strong>DBの内容に合わせて</strong>各利用者が記述します。<br />
 　この章では、簡単な例として<strong>都道府県管理</strong>を紹介します。<br />
 <br />
@@ -50,7 +52,7 @@
 /*!
 @file config.php
 @brief DB接続変数と、エンコードの定義
-@copyright Copyright (c) 2017 Yamanoi Yasushi,Shimojima Ryo.
+@copyright Copyright (c) 2021 Yamanoi Yasushi.
 */
 ////////////////////////////////////
 //実行ブロック
@@ -70,14 +72,6 @@ define('DB_NAME','********');</span>
 define('DB_CHARSET','utf8');
 //PHPのキャラセット
 define('PHP_CHARSET','UTF-8');
-//デバッグかどうか
-define('DB_DEBUG_MODE','1');
-<span class="red">//サイトのルートからのパス
-define('SITE_BASE_URL','/sources/');</span>
-//デバッグでない場合のエラー時のリダイレクト先
-define('DB_ERR_REDIRECT_URL',SITE_BASE_URL . 'errpage.php');
-
-?>
 </pre>
 </div>
 　この赤くなっている部分を環境に合わせて書き換えする必要があります。<br />
@@ -104,41 +98,42 @@ http://www.hoge.huga/sources/index.php
 </div>
 　にアクセスします。以下のような画面が無事表示されれば、まずは成功です。
 <p>&nbsp;</p>
-<img src="img/0000aa.png" width="80%"/>
+<img src="img/0000aa.png" width="100%" border="1"/>
 <p>図0000aa</p>
 <p>&nbsp;</p>
 　続いて<strong>都道府県管理</strong>をクリックします。(ほかのメニューのリンクはクリックしないでください。まだ準備ができていません。1章以降でセットアップします)
 <p>&nbsp;</p>
-<img src="img/0000a.png" width="80%"/>
+<img src="img/0000a.png" width="100%" border="1"/>
 <p>図0000a</p>
 <p>&nbsp;</p>
 　続いて<strong>詳細ページ</strong>に移行します。どこか都道府県名のリンクをクリックしてみてください。以下の画面になります。
 <p>&nbsp;</p>
-<img src="img/0000b.png" width="80%"/>
+<img src="img/0000b.png" width="100%" border="1"/>
 <p>図0000b</p>
 <p>&nbsp;</p>
 　ここで<strong>都道府県名</strong>を修正して確認すると、以下のようになります。
 <p>&nbsp;</p>
-<img src="img/0000c.png" width="80%"/>
+<img src="img/0000c.png" width="100%" border="1"/>
 <p>図0000c</p>
 <p>&nbsp;</p>
 　ここで、<strong>更新</strong>をクリックするとレコードが更新されます。<br />
 　また、一覧ページで<strong>新規</strong>で詳細ページに移行すると以下の画面になります。
 <p>&nbsp;</p>
-<img src="img/0000d.png" width="80%"/>
+<img src="img/0000d.png" width="100%" border="1"/>
 <p>図0000d</p>
 <p>&nbsp;</p>
-　ここで、新規に追加できます。<br />
-　また、一覧ページでは<strong>削除</strong>もできます。各レコードにある<strong>削除確認</strong>ボタンをクリックすると以下のようなダイアログが出ます。<p>&nbsp;</p>
-<img src="img/0000e.png" width="80%"/>
+　ここで、新規に追加できます。ここでは<strong>テスト県</strong>を追加してみます。確認の後追加してみてください。<br />
+　また、一覧ページでは<strong>削除</strong>もできます。各レコードにある<strong>削除確認</strong>ボタンをクリックすると以下のようなダイアログが出ます。ここでは先ほど追加した<strong>テスト県</strong>を削除してみます。
+<p>&nbsp;</p>
+<img src="img/0000e.png" width="100%" border="1"/>
 <p>図0000e</p>
 <p>&nbsp;</p>
-　ここで<strong>OK</strong>をクリックすると削除されます。この例は<strong>テスト県</strong>を新規で作成して、そのレコードを削除しようとしているところです。<br />
+　ここで<strong>OK</strong>をクリックすると削除されます。<br />
 　このように<strong>追加、更新、削除</strong>でできる形になっています。<br />
 <br/>
 　この例にある<strong>都道府県</strong>は、そう変化するものではありませんので、追加や削除機能が必要かどうかは別として、このような機能を実装できます、という例です。<br />
 　また<strong>追加</strong>をしますと、データベースの仕様として<strong>プライマリキー</strong>は欠番になります。固定的なマスタテーブルの場合、このような<strong>欠番</strong>は一般的にはバグのもとにもなるので初期化しておきましょう。<br />
-　<strong>SQL文によるテーブルの作成</strong>の方法で初期化します。
+　<strong>SQL文によるテーブルの作成</strong>の方法で再初期化します。
 </div>
 <!-- /コンテンツ　-->
 <hr>

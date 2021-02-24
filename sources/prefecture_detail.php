@@ -237,22 +237,19 @@ END_BLOCK;
 }
 
 ?>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta charset="utf-8">
 <link href="css/main.css" rel="stylesheet" type="text/css">
 <title>都道府県詳細</title>
 <script type="text/javascript">
-<!--
 function set_func_form(fn,pm){
 	document.form1.target = "_self";
 	document.form1.func.value = fn;
 	document.form1.param.value = pm;
 	document.form1.submit();
 }
-
-
-// -->
 </script>
 </head>
 <body>
@@ -263,7 +260,7 @@ function set_func_form(fn,pm){
 <h2>都道府県詳細</h2>
 </div>
 <!-- コンテンツ　-->
-<div id="inquiry">
+<div id="contents">
 <?php echo_err_flag(); ?>
 
 <form name="form1" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" >

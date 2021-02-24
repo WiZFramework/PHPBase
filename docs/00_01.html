@@ -1,6 +1,7 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta charset="utf-8">
 <link href="css/main.css" rel="stylesheet" type="text/css">
 <title>PHPBaseドキュメント</title>
 </head>
@@ -14,7 +15,7 @@
 <div id="contents">
 <h3>００１．中間層PHPの構造と記述方法</h3>
 　この項では<strong>中間層PHP</strong>である<strong>common/contents_db.php</strong>について説明します。<br/>
-　<strong>中間層PHP</strong>とは具体的には<strong>SELECT文</strong>を発行するクラスです。<strong>INSERT、UPDATE、DELETE</strong>は<strong>中間層PHP</strong>には含まれません。これら<strong>更新系のSQL</strong>については後述します。<br />
+　<strong>中間層PHP</strong>とは具体的には<strong>SELECT文</strong>を発行するクラスです。<strong>INSERT、UPDATE、DELETE</strong>は<strong>中間層PHP</strong>は一般的には個々には記述しません。これら<strong>更新系のSQL</strong>については後述します。<br />
 　これから説明するようなクラスは、実際にPHPでサイトを作成する上で、各自が記述する必要があります。このドキュメントではサンプルとして<strong>都道府県テーブル</strong>用のクラスが記述されています。<br />
 　この項では、<strong>都道府県テーブル</strong>用のクラスを説明することで、記述方法の説明とします。<br />
 <br />
@@ -87,6 +88,42 @@ class cprefecture extends crecord {
     }
     //--------------------------------------------------------------------------------------
     /*!
+    @brief  指定された範囲の配列を得る（プレースホルダつき版）
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $from   抽出開始行
+    @param[in]  $limit  抽出数
+    @return 配列（2次元配列になる）
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all_prep($debug,$from,$limit){
+        $arr = array();
+        $query = "
+select
+*
+from
+prefecture
+where
+1
+order by
+prefecture_id asc
+limit ?, ?
+";
+        $prep_arr = array($from,$limit);
+        //親クラスのselect_query()メンバ関数を呼ぶ
+        $this->select_query(
+            $debug,         //デバッグ表示するかどうか
+            $query,         //プレースホルダつきSQL
+            $prep_arr       //データの配列
+        );
+        //順次取り出す
+        while($row = $this->fetch_assoc()){
+            $arr[] = $row;
+        }
+        //取得した配列を返す
+        return $arr;
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
     @brief  指定されたIDの配列を得る
     @param[in]  $debug  デバッグ出力をするかどうか
     @param[in]  $id     ID
@@ -94,7 +131,7 @@ class cprefecture extends crecord {
     */
     //--------------------------------------------------------------------------------------
     public function get_tgt($debug,$id){
-        if(!cutil::is_number($id)
+        if(!is_int($id)
         ||  $id &lt; 1){
             //falseを返す
             return false;
@@ -105,6 +142,37 @@ class cprefecture extends crecord {
             "*",            //取得するカラム
             "prefecture",   //取得するテーブル
             "prefecture_id=" . $id  //条件
+        );
+        return $this->fetch_assoc();
+    }
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定されたIDの配列を得る（プレースホルダつき版）
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $id     ID
+    @return 配列（1次元配列になる）空の場合はfalse
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_tgt_prep($debug,$id){
+        if(!is_int($id)
+        ||  $id &lt; 1){
+            //falseを返す
+            return false;
+        }
+        $query = "
+select
+*
+from
+prefecture
+where
+prefecture_id = ?
+";
+        $prep_arr = array($id);
+        //親クラスのselect_query()メンバ関数を呼ぶ
+        $this->select_query(
+            $debug,         //デバッグ表示するかどうか
+            $query,         //プレースホルダつきSQL
+            $prep_arr       //データの配列
         );
         return $this->fetch_assoc();
     }
@@ -169,16 +237,17 @@ class cprefecture extends crecord {
     @param[in]  $where 条件文（省略可）
     @param[in]  $orderby ならび順（省略可）
     @param[in]  $limit 抽出範囲（省略可）
+    @param[in]  $values SQLにはバインド用の値が入っている前提(SQLで「?」に対応する、1次元配列)
     @return 成功すればtrue
     */
     //--------------------------------------------------------------------------------------
-    public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = ''){
+    public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = '',$values = array()){
         global $DB_PDO;
         $this->free_res();
         if($orderby != ""){
             $orderby = "order by " . $orderby;
         }
-        <span class="red">$this->retarr['sql'] =&lt;&lt;&lt;END_BLOCK
+        $this->retarr['sql'] =&lt;&lt;&lt; END_BLOCK
 select
 {$columns} 
 from
@@ -187,14 +256,15 @@ where
 {$where}
 {$orderby}
 {$limit}
-END_BLOCK;</span>
+END_BLOCK;
+        //親クラスのcrecord_core_pres関数を呼ぶ
+        $ret =  $this->crecord_core_pres($values);
         if($debug){
             echo '&lt;br />[sql debug]&lt;br />';
-            echo $this->retarr['sql'];
+            $this->res->debugDumpParams();
             echo '&lt;br />[/sql debug]&lt;br />';
         }
-        //親クラスのexcute系関数を呼ぶ
-        return $this->excute_core();
+        return $ret;
     }
 </pre>
 </div>

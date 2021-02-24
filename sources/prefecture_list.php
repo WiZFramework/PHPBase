@@ -198,13 +198,13 @@ function echo_tgt_uri(){
 }
 
 ?>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta charset="utf-8">
 <link href="css/main.css" rel="stylesheet" type="text/css">
 <title>都道府県一覧</title>
 <script type="text/javascript">
-<!--
 function set_func_form(fn,pm){
     document.form1.target = "_self";
     document.form1.func.value = fn;
@@ -223,7 +223,6 @@ function del_func_form(pm,mess){
         document.form1.submit();
     }
 }
-// -->
 </script>
 </head>
 <body>
@@ -234,7 +233,7 @@ function del_func_form(pm,mess){
 <h2>都道府県一覧</h2>
 </div>
 <!-- コンテンツ　-->
-<div id="inquiry">
+<div id="contents">
 <?php echo $ERR_STR; ?>
 <form name="form1" action="<?php echo_tgt_uri(); ?>" method="post" >
 <p><a href="prefecture_detail.php">新規</a></p>

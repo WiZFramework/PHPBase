@@ -1,66 +1,90 @@
 @charset "utf-8";
-
 body, h1, h2, h3, h4, h5, p {
-	font-family: "Yu Gothic", YuGothic, "ヒラギノ角ゴ ProN W3", Hiragino Kaku Gothic ProN, Arial, "メイリオ", Meiryo, sans-serif;
-}
-
-li{
-	list-style-type:decimal;
+font-family: "游ゴシック", YuGothic, "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "メイリオ", "Meiryo", sans-serif;
+font-weight: 500;
 }
 
 body {
-	width: 100%; 
-	background-image: url(../img/bg_main.png); 
-	background-repeat: repeat; 
-	margin-top: 0;
-	margin-bottom: 0;
+	background-color: #EEEEEE;
+	margin-left: 0;
+	margin-right: 0;
+	margin-top: 0px;
+	margin-bottom: 40px;
+	padding: 0px;
 	text-align: center;
-	padding-top: 0px;
-	padding-left: 0px;
-	padding-right: 0px;
-	padding-bottom: 20px;
 }
 
 h1, h2, h3, h4, h5 {
 	padding:0;
 	margin: 0;
-	color: #505050;
+}
+
+h2{
+font-size: 26px;
+font-weight : bold;
+margin-top: 24px;
+margin-bottom: 20px;
+}
+
+h3{
+font-size: 22px;
+font-weight : bold;
+margin-top: 20px;
+margin-bottom: 10px;
+
+}
+
+h4{
+font-size: 16px;
+font-weight : bold;
+margin-top: 14px;
+margin-bottom: 8px;
 }
 
 
 a:link {
-	color: #0000FF;
+	color: #004488;
 }
 a:visited {
-	color: #0000FF;
+	color: #004488;
 }
 a:hover {
-	color: #CA0C18;
+	color: #8b0000;
 }
 
-/*コンテナブロック*/
+ul.decimal li {
+	list-style-type:decimal;
+}
+
+ul.circle li {
+	list-style-type:circle;
+}
+
+ul.mokuji  {
+	margin-top: 0px;
+	margin-left: 50px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	padding: 0;
+}
+
 #container {
+	width: 880px; 
+	font-size: 90%;
+	line-height: 140%;
+	background-color: #FFFFFF;
+	padding-bottom: 14px;
 	margin-left: auto;
 	margin-right: auto;
-	margin-top: 0;
-	margin-bottom: 0;
-	width: 860px; 
-	font-size: 90%;
-	text-align: left;
-	line-height: 1.5;
-	color: #333333;
-	background-color: #ffffff;
 }
 
-#head {
+#header {
+	font-size: 20px;
 	text-align: left;
 	padding-top: 12px;
 	padding-right: 0px;
 	padding-left: 8px;
 	padding-bottom: 14px;
-	margin: 0px;
-	font-size: 18px;
-	font-weight: bold;
 }
 
 #pan {
@@ -104,23 +128,18 @@ a:hover {
 	padding: 0px;
 }
 
-#headTitle {
+
+#contents  {
 	margin-top: 0px;
 	margin-left: 8px;
-	margin-right: 0px;
-	margin-bottom: 0px;
-	padding: 0px;
-}
-
-#inquiry  {
-	margin-top: 10px;
-	margin-left: 8px;
 	margin-right: 8px;
-	margin-bottom: 0px;
+	margin-bottom: 16px;
+	text-align: left;
 	padding: 0px;
 }
 
-#inquiry p {
+
+#contents p {
 	margin-top: 4px;
 	margin-left: 2px;
 	margin-right: 2px;
@@ -128,64 +147,159 @@ a:hover {
 	padding: 0px;
 }
 
-#inquiry form {
-	margin: 0px;
-	padding: 0px;
+
+#contents .box1_title {
+	margin-top: 8px;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: -4px;
+	padding: 4px;
+	border: 1px #0cb0e0 solid;
+	background-color: #7fff00;
+}
+
+#contents .box1_title_2 {
+	margin-top: 8px;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: -4px;
+	padding: 4px;
+	border: 1px #0cb0e0 solid;
+	background-color: #EE82EE;
+}
+
+#contents .box1_head {
+	margin-top: 8px;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: -4px;
+	padding: 4px;
+	border: 1px #0cb0e0 solid;
+	background-color: #e0ffff;
 }
 
 
-#inquiry .red {
-	color: #FF0000; 
+#contents .box1 {
+	margin-top: 8px;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 8px;
+	padding-top: 4px;
+	padding-left: 4px;
+	padding-right: 4px;
+	padding-bottom: 4px;
+	border: 1px #ffb366 solid;
 }
 
-#inquiry .error {
-	color: #FF0000; 
+#footer {
+	margin-top: 8px;
+	margin-bottom: 8px;
+	padding-top: 4px;
+	padding-bottom: 4px;
 }
 
 
-#inquiry .blue {
-	color: #00cccc; 
+ul.foot_navi {
+	margin-top: 0px;
+	margin-left: 240px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	padding: 0;
+	list-style-type: none;
 }
 
-#inquiry .dark_blue {
-	color: #004488; 
-}
-
-
-/* class=center */
-#inquiry .center {
+ul.foot_navi li {
+	float: left;
+	width: 8em;
+	margin-right: 5px;
+	padding: 2px;
+	border: 1px #ffb366 solid;
+	background-color: #fffdee;
 	text-align: center;
 }
 
-#inquiry .right {
+
+
+#contents .box1 pre {
+	margin: 0px;
+	line-height: 120%;
+	font-weight: bold;
+	background-color: #fffdee;
+}
+
+#contents .red {
+	color: #FF0000; 
+}
+
+#contents .blue {
+	color: #0000c0; 
+}
+
+#contents .dark_blue {
+	color: #004488; 
+}
+
+#contents .dark_red {
+	color: #990033; 
+}
+
+
+#contents .center {
+	text-align: center;
+}
+
+#contents .right {
 	text-align: right;
 }
 
-#inquiry table {
-	width: 840px;
-	margin-top: 6px;
+#contents b {
+	margin-left: 4px;
+	margin-right: 4px;
+}
+
+#contents table {
+	width: 100%;
+	margin-top: 0px;
 	margin-left: 2px;
 	margin-right: 0px;
-	margin-bottom: 20px;
+	margin-bottom: 0px;
 	padding: 0px;
 	border: 1px solid #CCCCCC;
-	font-size: 90%;
+	font-size: 100%;
 }
 
-#inquiry table .small {
-	width: 660px;
-	margin-top: 6px;
-	margin-left: 10px;
-	margin-right: 0px;
-	margin-bottom: 6px;
-	padding: 0px;
-	border: 1px solid #CCCCCC;
-	background-color: #fff8ec;
-	font-size: 90%;
+#contents th {
+	text-align: center;
+	border-top: none;
+	border-bottom: none;
+	border-left: 6px solid #98FB98; 
+	border-right: none;
+	background-color: #98FB98;
+	font-weight: normal;
+	padding-top: 4px; 
+	padding-bottom: 4px; 
+	padding-left: 2px; 
+	padding-right: 2px; 
 }
 
 
-#inquiry td {
+/*<th class="nobottom">の設定*/
+#contents th.nobottom {
+	text-align: center;
+	border-top: none;
+	border-bottom: none;
+	border-left: 6px solid #98FB98; 
+	border-right: none;
+	background-color: #98FB98;
+	font-weight: normal;
+	padding-top: 4px; 
+	padding-bottom: 4px; 
+	padding-left: 2px; 
+	padding-right: 2px; 
+}
+
+
+#contents td {
 	border-top: none;
 	border-bottom: 1px solid #CCCCCC;
 	border-left: none;
@@ -193,43 +307,33 @@ a:hover {
 	margin: 0px;
 	padding-top: 4px; 
 	padding-bottom: 4px; 
+	padding-left: 2px; 
+	padding-right: 2px; 
 }
 
-#inquiry td.nobottom{
+#contents td.nobottom{
 	border: none;
 	margin: 0px;
 	padding-top: 4px; 
 	padding-bottom: 4px; 
+	padding-left: 2px; 
+	padding-right: 2px; 
 }
 
-#inquiry input,textarea{
+
+#contents input,textarea{
 	font-size: 90%;
 }
 
-#inquiry select{
+#contents select{
 	font-size: 90%;
 }
 
-#inquiry th {
-	border-top: none;
-	border-bottom: none;
-	border-left: 2px solid #F3F3F3; 
-	border-right: none;
-	background-color: #C0F3FF;
-	font-weight: normal;
-	padding-top: 4px; 
-	padding-bottom: 4px; 
+.srcimg{
+	display: none; 
 }
 
-#inquiry th.nobottom {
-	border-top: none;
-	border-bottom: none;
-	border-left: 2px solid #F3F3F3; 
-	border-right: none;
-	background-color: #C0F3FF;
-	font-weight: normal;
-	padding-top: 4px; 
-	padding-bottom: 4px; 
+.srccode{
+/*	display: none; */
 }
-
 

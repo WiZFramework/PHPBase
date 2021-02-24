@@ -3,9 +3,10 @@ require_once("inc_base.php");
 require_once($CMS_COMMON_INCLUDE_DIR . "libs.php");
 
 ?>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta charset="utf-8">
 <link href="css/main.css" rel="stylesheet" type="text/css">
 <title>メインメニュー</title>
 <script type="text/javascript">
@@ -23,7 +24,7 @@ require_once($CMS_COMMON_INCLUDE_DIR . "libs.php");
 <h2>メインメニュー</h2>
 </div>
 <!-- コンテンツ　-->
-<div id="inquiry">
+<div id="contents">
 <br />
 <table >
 <tr>
