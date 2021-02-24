@@ -144,7 +144,7 @@ class csqlcore {
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	protected function crecord_core($values = array()){
+	protected function crecord_core_pres($values = array()){
 		global $DB_PDO;
 		try{
 			$DB_PDO->beginTransaction ();
@@ -238,6 +238,58 @@ class csqlcore {
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
+	@brief cchange系のSQLを実行する
+	@param[in]  $values   SQLにはバインド用の値が入っている前提(SQLで「?」に対応する、1次元配列)
+	@param[in]  $is_insert  インサートかどうか
+	@return 成功すればtrue
+	*/
+	//--------------------------------------------------------------------------------------
+	protected function cchange_core_pres($values = array(),$is_insert = false){
+		global $DB_PDO;
+		try{
+			$DB_PDO->beginTransaction ();
+			$this->res = $DB_PDO->prepare($this->retarr['sql']);
+			if(is_array($values) && count($values) > 0){
+				foreach($values as $key => $val){
+					if(is_int($val)){
+						$param = PDO::PARAM_INT;
+					}
+					elseif(is_bool($val)){
+						$param = PDO::PARAM_BOOL;
+					}
+					elseif(is_null($val)){
+						$param = PDO::PARAM_NULL;
+					}
+					elseif(is_string($val)){
+						$param = PDO::PARAM_STR;
+					}
+					else{
+						$param = FALSE;
+					}
+					if($param !== false){
+						$this->res->bindValue($key + 1, $val, $param);
+					}
+				}
+			}
+			$this->res->execute();
+			if($is_insert){
+				$this->retarr['lastinsert'] = $DB_PDO->lastInsertId();
+			}
+			$DB_PDO->commit();
+			return true;
+		}
+		catch (PDOException $e){
+			$DB_PDO->rollback();
+			if($DB_PDO->is_display_errors()){
+				echo '更新バインド系のSQLが実行できません: ' . $e->getMessage();
+			}
+			exit();
+		}
+		return false;
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
 	@brief  1行分の取り出し
 	@return 1行分の配列。空や失敗場合はfalse。リソースが無効の場合は例外
 	*/
@@ -300,7 +352,7 @@ class crecord extends csqlcore {
 	@param[in]  $where 条件文（省略可）
 	@param[in]  $orderby ならび順（省略可）
 	@param[in]  $limit 抽出範囲（省略可）
-	@param[in]  $values 値が入った配列（条件式等がプレースフォルダの場合）
+	@param[in]  $values SQLにはバインド用の値が入っている前提(SQLで「?」に対応する、1次元配列)
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
@@ -320,8 +372,8 @@ where
 {$orderby}
 {$limit}
 END_BLOCK;
-		//親クラスのcrecord_core関数を呼ぶ
-		$ret =  $this->crecord_core($values);
+		//親クラスのcrecord_core_pres関数を呼ぶ
+		$ret =  $this->crecord_core_pres($values);
 		if($debug){
 			echo '<br />[sql debug]<br />';
 			$this->res->debugDumpParams();
@@ -334,7 +386,7 @@ END_BLOCK;
 	@brief  select文のクエリ実行(select関数では書けない場合、利用)
 	@param[in]  $debug クエリを出力するかどうか
 	@param[in]  $sql SQL文
-	@param[in]  $values 値が入った配列（条件式等がプレースフォルダの場合）
+	@param[in]  $values SQLにはバインド用の値が入っている前提(SQLで「?」に対応する、1次元配列)
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
@@ -342,8 +394,8 @@ END_BLOCK;
 		global $DB_PDO;
 		$this->free_res();
 		$this->retarr['sql'] = $sql;
-		//親クラスのcrecord_core関数を呼ぶ
-		$ret =  $this->crecord_core($values);
+		//親クラスのcrecord_core_pres関数を呼ぶ
+		$ret =  $this->crecord_core_pres($values);
 		if($debug){
 			echo '<br />[sql debug]<br />';
 			$this->res->debugDumpParams();
@@ -351,6 +403,7 @@ END_BLOCK;
 		}
 		return $ret;
 	}
+
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief  定型化されたget_all_count()関数（テーブルのすべての個数を得る）
@@ -359,7 +412,7 @@ END_BLOCK;
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	public function get_all_count_core($debug,$table_name){
+	public function get_all_count_simple($debug,$table_name){
 		//select()メンバ関数を呼ぶ
 		if($this->select(
 			$debug,					//デバッグ文字を出力するかどうか
@@ -388,7 +441,7 @@ END_BLOCK;
 	@return	配列（2次元配列になる）
 	*/
 	//--------------------------------------------------------------------------------------
-	public function get_all_core($debug,$from,$limit,$table_name,$sort_id_name){
+	public function get_all_simple($debug,$from,$limit,$table_name,$sort_id_name){
 		$arr = array();
 		//select()メンバ関数を呼ぶ
 		if($this->select(
@@ -416,7 +469,7 @@ END_BLOCK;
 	@return	配列（2次元配列になる）
 	*/
 	//--------------------------------------------------------------------------------------
-	public function get_alltable_core($debug,$table_name,$sort_id_name){
+	public function get_alltable_simple($debug,$table_name,$sort_id_name){
 		$arr = array();
 		//select()メンバ関数を呼ぶ
 		if($this->select(
@@ -444,7 +497,7 @@ END_BLOCK;
 	@return	配列（1次元配列になる）空の場合はfalse
 	*/
 	//--------------------------------------------------------------------------------------
-	public function get_tgt_core($debug,$id,$table_name,$id_name){
+	public function get_tgt_simple($debug,$id,$table_name,$id_name){
 		if(!cutil::is_number($id)
 		||  $id < 1){
 			//falseを返す
@@ -487,13 +540,14 @@ class cchange_ex extends csqlcore {
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief  インサート
+	@param[in]  $debug デバッグ出力
 	@param[in]  $table テーブル名
 	@param[in]  $arr 追加する項目の配列
-	@param[in]  $debug デバッグ出力
-	@return 成功すれば追加されたID。失敗は例外
+	@param[in]  $chk 実行せずにSQLを出力して止める場合true
+	@return 成功すれば追加されたID
 	*/
 	//--------------------------------------------------------------------------------------
-	public function insert($table,&$arr,$debug = false){
+	public function insert($debug,$table,&$arr,$chk = false){
 		global $DB_PDO;
 		//空の配列を代入
 		$this->retarr = array();
@@ -535,6 +589,12 @@ END_BLOCK;
 		foreach($arr as $key => $val){
 			$values[":" . $key] = $val;
 		}
+		if($chk){
+			echo 'SQL: ' . $this->retarr['sql'] . '<br>';
+			echo 'DATA: <br>';
+			print_r($values);
+			exit();
+		}
 		//親クラスのexcute_core関数を呼ぶ
 		$ret = 0;
 		if($this->cchange_core($values,true)){
@@ -550,62 +610,16 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief  インサートをチェックする
-	@param[in]  $table テーブル名
-	@param[in]  $arr 追加する項目の配列
-	@return なし（SQLを表示して終了）
-	*/
-	//--------------------------------------------------------------------------------------
-	public function insert_chk($table,&$arr){
-		global $DB_PDO;
-		//空の配列を代入
-		$this->retarr = array();
-		if($table == '' || !is_array($arr) || count($arr) < 1){
-			if($DB_PDO->is_display_errors()){
-				echo 'インサートチェックすべきデータが不定です。';
-			}
-			exit();
-		}
-		//追加するsql文を動的につくり出す
-		$sqlarr = "(";
-		$size = count($arr);
-		$count = 1;
-		foreach($arr as $i => $value){
-			$sqlarr .=  $i;
-			if($size > $count){
-				$sqlarr .= ",";
-			}
-			$count++;
-		}
-		$sqlarr .= ") values (";
-		$count = 1;
-		foreach($arr as $i => $value){
-			$sqlarr .=  $this->make_safe_sqlstr($value);
-			if($size > $count){
-				$sqlarr .= ",";
-			}
-			$count++;
-		}
-		$sqlarr .= ")";
-		$sql =<<< END_BLOCK
-insert into
-{$table}
-{$sqlarr}
-END_BLOCK;
-		echo $sql;
-		exit;
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
 	@brief  アップデート
+	@param[in]  $debug デバッグ出力
 	@param[in]  $table テーブル名
 	@param[in]  $arr 更新する項目の配列
 	@param[in]  $where 条件
-	@param[in]  $debug デバッグ出力
-	@return 失敗したら終了そうでなければ影響を受けた行数
+	@param[in]  $chk 実行せずにSQLを出力して止める場合true
+	@return 影響を受けた行数
 	*/
 	//--------------------------------------------------------------------------------------
-	public function update($table,&$arr,$where,$debug = false){
+	public function update($debug,$table,&$arr,$where,$chk=false){
 		global $DB_PDO;
 		//空の配列を代入
 		$this->retarr = array();
@@ -627,7 +641,7 @@ END_BLOCK;
 			}
 			$count++;
 		}
-		$this->retarr['sql'] =<<< END_BLOCK
+		$this->retarr['sql'] = <<< END_BLOCK
 update
 {$table}
 set
@@ -640,6 +654,12 @@ END_BLOCK;
 		foreach($arr as $key => $val){
 			$values[":" . $key] = $val;
 		}
+		if($chk){
+			echo 'SQL: ' . $this->retarr['sql'] . '<br>';
+			echo 'DATA: <br>';
+			print_r($values);
+			exit();
+		}
 		//親クラスのcchange_core関数を呼ぶ
 		$ret = 0;
 		if($this->cchange_core($values)){
@@ -650,61 +670,20 @@ END_BLOCK;
 			$this->res->debugDumpParams();
 			echo '<br />[/sql debug]<br />';
 		}
-		//失敗したら終了そうでなければ影響を受けた行数
 		return $ret;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief  アップデートをチェックする
-	@param[in]  $table テーブル名
-	@param[in]  $arr 更新する項目の配列
-	@param[in]  $where 条件
-	@return なし（SQLを表示して終了）
-	*/
-	//--------------------------------------------------------------------------------------
-	public function update_chk($table,&$arr,$where){
-		global $DB_PDO;
-		//空の配列を代入
-		$this->retarr = array();
-		if($table == '' || !is_array($arr) || count($arr) < 1
-			|| $where == ''){
-			if($DB_PDO->is_display_errors()){
-				echo '更新チェックすべきデータがありません。';
-			}
-			exit();
-		}
-		$size = count($arr);
-		$count = 1;
-		$sqlarr = '';
-		foreach($arr as $i => $value){
-			$sqlarr .=  $i . " = " . $this->make_safe_sqlstr($value);
-			if($size > $count){
-				$sqlarr .= ",";
-			}
-			$count++;
-		}
-		$sql =<<< END_BLOCK
-update
-{$table}
-set
-{$sqlarr}
-where
-{$where}
-END_BLOCK;
-		echo $sql;
-		exit;
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
 	@brief  削除
+	@param[in]  $debug デバッグ出力
 	@param[in]  $table テーブル名
 	@param[in]  $where 条件
 	@param[in]  $values プレイスフォルダを使う場合のデータ
-	@param[in]  $debug デバッグ出力
-	@return 成功すれば削除したレコード数。失敗は例外
+	@param[in]  $chk 実行せずにSQLを出力して止める場合true
+	@return 影響を受けた行数
 	*/
 	//--------------------------------------------------------------------------------------
-	public function delete($table,$where,$values = array(),$debug = false){
+	public function delete($debug,$table,$where,$values = array(),$chk = false){
 		global $DB_PDO;
 		//空の配列を代入
 		$this->retarr = array();
@@ -721,9 +700,15 @@ from
 where
 {$where}
 END_BLOCK;
+		if($chk){
+			echo 'SQL: ' . $this->retarr['sql'] . '<br>';
+			echo 'DATA: <br>';
+			print_r($values);
+			exit();
+		}
 		//親クラスのcchange_core関数を呼ぶ
 		$ret =  0;
-		if($this->cchange_core($values)){
+		if($this->cchange_core_pres($values)){
 			$ret = $this->res->rowCount();
 		}
 		if($debug){
@@ -735,40 +720,14 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief  削除チェック
-	@param[in]  $table テーブル名
-	@param[in]  $where 条件
-	@return なし（SQLを表示して終了）
-	*/
-	//--------------------------------------------------------------------------------------
-	public function delete_chk($table,$where){
-		global $DB_PDO;
-		//空の配列を代入
-		$this->retarr = array();
-		if($table == '' || $where == ''){
-			if($DB_PDO->is_display_errors()){
-				echo '削除チェックすべきデータがありません。';
-			}
-			exit();
-		}
-		$sql =<<< END_BLOCK
-delete
-from
-{$table}
-where
-{$where}
-END_BLOCK;
-		echo $sql;
-		exit;
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
 	@brief  テーブルの中身を全削除
+	@param[in]  $debug デバッグ出力
 	@param[in]  $table テーブル名
-	@return なし。失敗は例外
+	@param[in]  $chk 実行せずにSQLを出力して止める場合true
+	@return 影響を受けた行数
 	*/
 	//--------------------------------------------------------------------------------------
-	public function delete_table($table){
+	public function delete_table($debug,$table,$chk = false){
 		global $DB_PDO;
 		//空の配列を代入
 		$this->retarr = array();
@@ -783,33 +742,60 @@ delete
 from
 {$table}
 END_BLOCK;
-		//親クラスのcchange_core関数を呼ぶ
-		return $this->cchange_core(false);
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief  テーブルの削除のチェック
-	@param[in]  $table テーブル名
-	@return なし（SQLを表示して終了）
-	*/
-	//--------------------------------------------------------------------------------------
-	public function delete_table_chk($table){
-		global $DB_PDO;
-		//空の配列を代入
-		$this->retarr = array();
-		if($table == ''){
-			if($DB_PDO->is_display_errors()){
-				echo '削除チェックすべきテーブルがありません。';
-			}
+		if($chk){
+			echo 'SQL: ' . $this->retarr['sql'] . '<br>';
+			echo 'DATA: <br>';
+			print_r($values);
 			exit();
 		}
-		$sql =<<< END_BLOCK
-delete
-from
-{$table}
-END_BLOCK;
-		echo $sql;
-		exit;
+		//親クラスのcchange_core関数を呼ぶ
+		$ret =  0;
+		if($this->cchange_core(array())){
+			$ret = $this->res->rowCount();
+		}
+		if($debug){
+			echo '<br />[sql debug]<br />';
+			$this->res->debugDumpParams();
+			echo '<br />[/sql debug]<br />';
+		}
+		return $ret;
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  select文のクエリ実行(select関数では書けない場合、利用)
+	@param[in]  $debug クエリを出力するかどうか
+	@param[in]  $sql SQL文
+	@param[in]  $values 値が入った配列（条件式等がプレースフォルダの場合）
+	@param[in]  $is_insert  インサートかどうか
+	@param[in]  $chk 実行せずにSQLを出力して止める場合true
+	@return 影響を受けた行数と場合によってはインサートID
+	*/
+	//--------------------------------------------------------------------------------------
+	public function change_query($debug,$sql,$values = array(),$is_insert = false,$chk = false){
+		global $DB_PDO;
+		$this->free_res();
+		$this->retarr['sql'] = $sql;
+		if($chk){
+			echo 'SQL: ' . $this->retarr['sql'] . '<br>';
+			echo 'DATA: <br>';
+			print_r($values);
+			exit();
+		}
+		//親クラスのcchange_core_pres関数を呼ぶ
+		$ret =  array();
+		if($this->cchange_core_pres($values)){
+			$ret['rowCount'] = $this->res->rowCount();
+			if($is_insert){
+				$ret['lastInsert']  = $this->retarr['lastinsert'];
+			}
+		}
+		if($debug){
+			echo '<br />[sql debug]<br />';
+			$this->res->debugDumpParams();
+			echo '<br />[/sql debug]<br />';
+		}
+		return $ret;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!

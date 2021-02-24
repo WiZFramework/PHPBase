@@ -75,6 +75,42 @@ class cprefecture extends crecord {
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
+	@brief	指定された範囲の配列を得る（プレースホルダつき版）
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$from	抽出開始行
+	@param[in]	$limit	抽出数
+	@return	配列（2次元配列になる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all_prep($debug,$from,$limit){
+		$arr = array();
+		$query = "
+select
+*
+from
+prefecture
+where
+1
+order by
+prefecture_id asc
+limit ?, ?
+";
+		$prep_arr = array($from,$limit);
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
+		);
+		//順次取り出す
+		while($row = $this->fetch_assoc()){
+			$arr[] = $row;
+		}
+		//取得した配列を返す
+		return $arr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
 	@brief	指定されたIDの配列を得る
 	@param[in]	$debug	デバッグ出力をするかどうか
 	@param[in]	$id		ID
@@ -93,6 +129,37 @@ class cprefecture extends crecord {
 			"*",			//取得するカラム
 			"prefecture",	//取得するテーブル
 			"prefecture_id=" . $id	//条件
+		);
+		return $this->fetch_assoc();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	指定されたIDの配列を得る（プレースホルダつき版）
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$id		ID
+	@return	配列（1次元配列になる）空の場合はfalse
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_tgt_prep($debug,$id){
+		if(!cutil::is_number($id)
+		||  $id < 1){
+			//falseを返す
+			return false;
+		}
+		$query = "
+select
+*
+from
+prefecture
+where
+prefecture_id = ?
+";
+		$prep_arr = array($id);
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
 		);
 		return $this->fetch_assoc();
 	}
@@ -128,7 +195,7 @@ class cfruits extends crecord {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_all_count($debug){
-		return $this->get_all_count_core($debug,'fruits');
+		return $this->get_all_count_simple($debug,'fruits');
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -138,7 +205,7 @@ class cfruits extends crecord {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_all($debug){
-		return $this->get_alltable_core($debug,'fruits','fruits_id');
+		return $this->get_alltable_simple($debug,'fruits','fruits_id');
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -149,7 +216,7 @@ class cfruits extends crecord {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt($debug,$id){
-		return $this->get_tgt_core($debug,$id,'fruits','fruits_id');
+		return $this->get_tgt_simple($debug,$id,'fruits','fruits_id');
 	}
 	//--------------------------------------------------------------------------------------
 	/*!

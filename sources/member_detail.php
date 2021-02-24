@@ -157,12 +157,12 @@ function paramchk(){
 //--------------------------------------------------------------------------------------
 function regist_fruits($member_id){
 	$chenge = new cchange_ex();
-	$chenge->delete("fruits_match","member_id=" . $member_id);
+	$chenge->delete(false,"fruits_match","member_id=" . $member_id);
 	foreach($_POST['fruits'] as $key => $val){
 		$dataarr = array();
 		$dataarr['member_id'] = (int)$member_id;
 		$dataarr['fruits_id'] = (int)$val;
-		$chenge->insert('fruits_match',$dataarr);
+		$chenge->insert(false,'fruits_match',$dataarr);
 	}
 }
 
@@ -183,12 +183,12 @@ function regist(){
 	$dataarr['member_comment'] = (string)$_POST['member_comment'];
 	$chenge = new cchange_ex();
 	if($member_id > 0){
-		$chenge->update('member',$dataarr,'member_id=' . $member_id);
+		$chenge->update(false,'member',$dataarr,'member_id=' . $member_id);
 		regist_fruits($member_id);
 		cutil::redirect_exit($_SERVER['PHP_SELF'] . '?mid=' . $member_id);
 	}
 	else{
-		$mid = $chenge->insert('member',$dataarr);
+		$mid = $chenge->insert(false,'member',$dataarr);
 		regist_fruits($mid);
 		cutil::redirect_exit($_SERVER['PHP_SELF'] . '?mid=' . $mid);
 	}

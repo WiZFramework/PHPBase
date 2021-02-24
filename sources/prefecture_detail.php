@@ -146,11 +146,11 @@ function regist(){
 	$dataarr['prefecture_name'] = (string)$_POST['prefecture_name'];
 	$chenge = new cchange_ex();
 	if($prefecture_id > 0){
-		$chenge->update('prefecture',$dataarr,'prefecture_id=' . $prefecture_id);
+		$chenge->update(true,'prefecture',$dataarr,'prefecture_id=' . $prefecture_id);
 		cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $prefecture_id);
 	}
 	else{
-		$pid = $chenge->insert('prefecture',$dataarr);
+		$pid = $chenge->insert(true,'prefecture',$dataarr);
 		cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $pid);
 	}
 }
