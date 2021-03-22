@@ -37,7 +37,7 @@ require_once($CMS_COMMON_INCLUDE_DIR . "libs.php");
 </pre>
 </div>
 　という2行があります。これは<strong>PHPBaseライブラリ</strong>のインクルード（require_once()関数を使用してます）です。<br />
-　まず、<strong>inc_base.php</strong>が呼ばれてます。これは<strong>sources/inc_base.php</strong>を差し、以下のような内容になってます。
+　まず、<strong>inc_base.php</strong>が呼ばれてます。これは<strong>sources/inc_base.php</strong>をさし、以下のような内容になってます。
 <div class="box1">
 <pre>
 &lt;?php
@@ -45,7 +45,7 @@ $CMS_COMMON_INCLUDE_DIR = "common/";
 ?>
 </pre>
 </div>
-　このファイルには<strong>commonディレクトリへの相対パス</strong>を記述します。<strong>PHPBase本体</strong>は<strong>commonディレクトリ内</strong>にあります。しかし、各ページは、ディレクトリ階層化されていて記述されることも多々あります。<br />
+　このファイルには<strong>commonディレクトリ（つまりライブラリのディレクトリ）への相対パス</strong>を記述します。<strong>PHPBase本体</strong>は<strong>commonディレクトリ内</strong>にあります。しかし、各ページは、ディレクトリ階層化されていて記述されることも多々あります。<br />
 　そのため、各ディレクトリに<strong>inc_base.php</strong>というファイルを置き、<strong>そのディレクトリからcommonディレクトリへの相対パス</strong>を記述しておくのです。こうすると、各ページのPHPがディレクトリを移動することになっても、移動先のディレクトリに<strong>inc_base.php</strong>があれば、<strong>commonディレクトリ</strong>は参照できる形になります。<br />
 　<strong>inc_base.php</strong>では<strong>$CMS_COMMON_INCLUDE_DIR</strong>が定義されますので、require_onceの2行目では、そのパス内の<strong>libs.php</strong>を呼び出しています。以下が<strong>common/libs.php</strong>の内容です。
 <div class="box1">
@@ -62,7 +62,6 @@ require_once("contents_func.php");
 //このコンテンツ独自の
 //DBの継承クラスの定義
 <span class="red">require_once("contents_db.php");</span>
-?>
 </pre>
 </div>
 　ここでは<strong>PHPBaseライブラリ</strong>を初期化するphpが、すべて呼ばれています。赤くなっている部分は、<strong>コンテンツDB</strong>のPHPファイル（すなわち<strong>contents_db.php</strong>）が呼ばれています。<br />
@@ -71,7 +70,7 @@ require_once("contents_func.php");
 <h4>１、ページ分けされた一覧表示</h4>
 　まず、<strong>ページ分け</strong>ですが、<strong>ページ分け</strong>に必要な情報は、<strong>1ページ何行表示するか</strong>、<strong>現在何ページ目を表示しているか</strong>、<strong>レコードの総数</strong>です。<br />
 　これらの情報があれば<strong>ページ分け</strong>されたページを作成できます。<br />
-　<strong>1ページ何行表示するか</strong>は33付近に定義されていて、
+　<strong>1ページ何行表示するか</strong>は33行目付近に定義されていて、
 <div class="box1">
 <pre>
 //1ページのリミット
@@ -85,18 +84,17 @@ $limit = 20;
 function readdata(){
     global $limit;
     global $rows;
-    global $order;
     global $page;
     <span class="red">$obj = new cprefecture();
     $from = ($page - 1) * $limit;
-    $rows = $obj->get_all(false,$from,$limit);</span>
+    $rows = $obj->get_all(false,$from,$limit);</spn>
 }
 </pre>
 </div>
 　ここで、赤くなっている部分で、前項で記述した<strong>cprefectureクラス</strong>のインスタンスを<strong>$obj</strong>に構築しています。<br />
-　そして、<strong>$from</strong>を<strong>$pageと$limitから割り出し</strong>、<strong>$obj->get_all()関数呼び出し</strong>で<strong>$row</strong>に代入しています。<br />
-　<strong>$row</strong>はグローバル変数ですので、ほか関数等からもアクセスできる形になります。<br />
-　<strong>$row</strong>を使ってHTMLを作成しているのが<strong>echo_prefecture_list()関数</strong>です
+　そして、<strong>$from</strong>を<strong>$pageと$limitから割り出し</strong>、<strong>$obj->get_all()関数呼び出し</strong>で<strong>$rows</strong>に代入しています。<br />
+　<strong>$rows</strong>はグローバル変数ですので、ほか関数等からもアクセスできる形になります。<br />
+　<strong>$rows</strong>を使ってHTMLを作成しているのが<strong>echo_prefecture_list()関数</strong>です
 <div class="box1">
 <pre>
 function echo_prefecture_list(){
@@ -113,7 +111,17 @@ function echo_prefecture_list(){
             $nobottom = ' nobottom';
         }
         $str =&lt;&lt;&lt;END_BLOCK
-//中略
+&lt;tr>
+&lt;td width="20%" class="center{$nobottom}">
+{$rows[$key]['prefecture_id']}
+&lt;/td>
+&lt;td width="65%" class="center{$nobottom}">
+&lt;a href="prefecture_detail.php?pid={$rows[$key]['prefecture_id']}{$urlparam}">{$rows[$key]['prefecture_name']}&lt;/a>
+&lt;/td>
+&lt;td width="15%" class="center{$nobottom}">
+&lt;input type="button" value="削除確認" onClick="javascript:del_func_form({$rows[$key]['prefecture_id']},'{$javamsg}')" />
+&lt;/td>
+&lt;/tr>
 END_BLOCK;
         $retstr .= $str;
         $rowscount++;
@@ -121,14 +129,14 @@ END_BLOCK;
     }
     else{
         $retstr =&lt;&lt;&lt;END_BLOCK
-//中略
+&lt;tr>&lt;td colspan="3" class="nobottom">都道府県が見つかりません&lt;/td>&lt;/tr>
 END_BLOCK;
     }
     echo $retstr;
 }
 </pre>
 </div>
-　中略になってますが<strong>ヒアドキュメント</strong>を使いながら<strong>&lt;tr>タグや&lt;td>タグ</strong>を作成しています。<br/>
+　<strong>ヒアドキュメント</strong>を使いながら<strong>&lt;tr>タグや&lt;td>タグ</strong>を作成しています。<br/>
 　そして、この<strong>echo_prefecture_list()関数</strong>を呼び出しているのが、下方の<strong>HTMLエリア</strong>にある
 <div class="box1">
 <pre>
@@ -150,7 +158,6 @@ END_BLOCK;
 function echo_page_block(){
     global $limit;
     global $page;
-    $retstr = '';
     $obj = new cprefecture();
     $allcount = $obj->get_all_count(false);
     <span class="red">$ctl = new cpager($_SERVER['PHP_SELF'],$allcount,$limit);
@@ -163,8 +170,8 @@ function echo_page_block(){
 　<strong>cpagerクラス</strong>は<strong>common/controls.php</strong>に記述されています。内容は説明しませんので各自読んでください。<br />
 　<strong>cpagerクラス</strong>はコンストラクタで<strong>基準のURL</strong>と<strong>レコード総数</strong>と<strong>1ページ当たりの行数</strong>を渡します。<br />
 　その後<strong>show()メンバ関数</strong>を呼び出せばそこに表示されます。<br />
-　<strong>show()メンバ関数</strong>に渡す<strong>'page',$page</strong>という引数は、<strong>$_GET</strong>で<strong>ページ</strong>を表す変数名とその値です。<br />
-　このページでは<strong>http://www.hoge.huga/sources/prefecture_list.php?<span class="red">page=3</span></strong>のようにアクセスすると<strong>3ページ目</strong>にアクセスできます。<strong>'pg',$page</strong>のように記述すると<strong>http://www.hoge.huga/sources/prefecture_list.php?<span class="red">pg=3</span></strong>が<strong>3ページ目</strong>を意味することになります。<br/>
+　<strong>show()メンバ関数</strong>に渡す<strong>('page',$page)</strong>という引数は、<strong>$_GET</strong>で<strong>ページ</strong>を表す変数名とその値です。<br />
+　このページでは<strong>http://www.hoge.huga/sources/prefecture_list.php?<span class="red">page=3</span></strong>のようにアクセスすると<strong>3ページ目</strong>にアクセスできます。<strong>('pg',$page)</strong>のように記述すると<strong>http://www.hoge.huga/sources/prefecture_list.php?<span class="red">pg=3</span></strong>が<strong>3ページ目</strong>を意味することになります。<br/>
 <br />
 <h4>２、各項目の削除</h4>
 　項目の削除は<strong>JavaScript</strong>による記述と、<strong>PHPによる削除</strong>の両方で実装します。<br/>

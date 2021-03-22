@@ -352,11 +352,10 @@ class crecord extends csqlcore {
 	@param[in]  $where 条件文（省略可）
 	@param[in]  $orderby ならび順（省略可）
 	@param[in]  $limit 抽出範囲（省略可）
-	@param[in]  $values SQLにはバインド用の値が入っている前提(SQLで「?」に対応する、1次元配列)
 	@return 成功すればtrue
 	*/
 	//--------------------------------------------------------------------------------------
-	public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = '',$values = array()){
+	public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = ''){
 		global $DB_PDO;
 		$this->free_res();
 		if($orderby != ""){
@@ -372,8 +371,8 @@ where
 {$orderby}
 {$limit}
 END_BLOCK;
-		//親クラスのcrecord_core_pres関数を呼ぶ
-		$ret =  $this->crecord_core_pres($values);
+		//親クラスのcrecord_core_pres関数を呼ぶ(値は渡さない)
+		$ret =  $this->crecord_core_pres(array());
 		if($debug){
 			echo '<br />[sql debug]<br />';
 			$this->res->debugDumpParams();
@@ -406,7 +405,7 @@ END_BLOCK;
 
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief  定型化されたget_all_count()関数（テーブルのすべての個数を得る）
+	@brief  シンプルなget_all_count()関数（テーブルのすべての個数を得る）
 	@param[in]	$debug クエリを出力するかどうか
 	@param[in]	$table_name
 	@return 成功すればtrue
@@ -432,7 +431,7 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief  定型化されたget_all()関数（テーブルの指定範囲の一覧を得る）
+	@brief  シンプルなget_all()関数（テーブルの指定範囲の一覧を得る）
 	@param[in]  $debug クエリを出力するかどうか
 	@param[in]	$from	抽出開始行
 	@param[in]	$limit	抽出数
@@ -462,7 +461,7 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief  定型化されたget_all()関数（テーブルのすべての一覧を得る）
+	@brief  シンプルなget_all()関数（テーブルのすべての一覧を得る）
 	@param[in]  $debug クエリを出力するかどうか
 	@param[in]	$table_name テーブル名
 	@param[in]	$sort_id_name ソートするID名
@@ -489,7 +488,7 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief	定型化されたget_tgt()関数。指定テーブルのIDの配列を得る
+	@brief	シンプルなget_tgt()関数。指定テーブルのIDの配列を得る
 	@param[in]	$debug	デバッグ出力をするかどうか
 	@param[in]	$id		ID
 	@param[in] 	$table_name テーブル名
@@ -498,7 +497,7 @@ END_BLOCK;
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt_simple($debug,$id,$table_name,$id_name){
-		if(!cutil::is_number($id)
+		if(!is_int($id)
 		||  $id < 1){
 			//falseを返す
 			return false;
@@ -678,12 +677,11 @@ END_BLOCK;
 	@param[in]  $debug デバッグ出力
 	@param[in]  $table テーブル名
 	@param[in]  $where 条件
-	@param[in]  $values プレイスフォルダを使う場合のデータ
 	@param[in]  $chk 実行せずにSQLを出力して止める場合true
 	@return 影響を受けた行数
 	*/
 	//--------------------------------------------------------------------------------------
-	public function delete($debug,$table,$where,$values = array(),$chk = false){
+	public function delete($debug,$table,$where,$chk = false){
 		global $DB_PDO;
 		//空の配列を代入
 		$this->retarr = array();
@@ -706,9 +704,9 @@ END_BLOCK;
 			print_r($values);
 			exit();
 		}
-		//親クラスのcchange_core関数を呼ぶ
+		//親クラスのcchange_core_pres関数を呼ぶ
 		$ret =  0;
-		if($this->cchange_core_pres($values)){
+		if($this->cchange_core_pres(array())){
 			$ret = $this->res->rowCount();
 		}
 		if($debug){
@@ -763,7 +761,7 @@ END_BLOCK;
 
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief  select文のクエリ実行(select関数では書けない場合、利用)
+	@brief  更新系文のクエリ実行(insertなどでは書けない場合、利用)
 	@param[in]  $debug クエリを出力するかどうか
 	@param[in]  $sql SQL文
 	@param[in]  $values 値が入った配列（条件式等がプレースフォルダの場合）
@@ -784,7 +782,7 @@ END_BLOCK;
 		}
 		//親クラスのcchange_core_pres関数を呼ぶ
 		$ret =  array();
-		if($this->cchange_core_pres($values)){
+		if($this->cchange_core_pres($values,$is_insert)){
 			$ret['rowCount'] = $this->res->rowCount();
 			if($is_insert){
 				$ret['lastInsert']  = $this->retarr['lastinsert'];

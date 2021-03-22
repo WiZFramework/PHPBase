@@ -84,7 +84,7 @@ class cprefecture extends crecord {
 	//--------------------------------------------------------------------------------------
 	public function get_all_prep($debug,$from,$limit){
 		$arr = array();
-		$query = "
+		$query = <<< END_BLOCK
 select
 *
 from
@@ -94,7 +94,7 @@ where
 order by
 prefecture_id asc
 limit ?, ?
-";
+END_BLOCK;
 		$prep_arr = array($from,$limit);
 		//親クラスのselect_query()メンバ関数を呼ぶ
 		$this->select_query(
@@ -118,7 +118,7 @@ limit ?, ?
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt($debug,$id){
-		if(!cutil::is_number($id)
+		if(!is_int($id)
 		||  $id < 1){
 			//falseを返す
 			return false;
@@ -141,19 +141,19 @@ limit ?, ?
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt_prep($debug,$id){
-		if(!cutil::is_number($id)
+		if(!is_int($id)
 		||  $id < 1){
 			//falseを返す
 			return false;
 		}
-		$query = "
+		$query = <<< END_BLOCK
 select
 *
 from
 prefecture
 where
 prefecture_id = ?
-";
+END_BLOCK;
 		$prep_arr = array($id);
 		//親クラスのselect_query()メンバ関数を呼ぶ
 		$this->select_query(
@@ -301,7 +301,7 @@ class cmember extends crecord {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt($debug,$id){
-		if(!cutil::is_number($id)
+		if(!is_int($id)
 		||  $id < 1){
 			//falseを返す
 			return false;

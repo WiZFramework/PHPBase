@@ -22,7 +22,7 @@ $page = 1;
 //もしページが指定されていたら
 if(isset($_GET['page']) 
     //なおかつ、数字だったら
-    && cutil::is_number($_GET['page'])
+    && is_int($_GET['page'])
     //なおかつ、0より大きかったら
     && $_GET['page'] > 0){
     //パラメータを設定
@@ -91,7 +91,7 @@ function is_func_active(){
 function param_chk(){
 	 global $ERR_STR;
 	if(!isset($_POST['param']) 
-	|| !cutil::is_number($_POST['param'])
+	|| !is_int($_POST['param'])
 	|| $_POST['param'] <= 0){
 		$ERR_STR .= "パラメータを取得できませんでした\n";
 		return false;
@@ -109,7 +109,6 @@ function param_chk(){
 function readdata(){
 	global $limit;
 	global $rows;
-	 global $order;
 	global $page;
 	$obj = new cprefecture();
 	$from = ($page - 1) * $limit;
@@ -139,7 +138,6 @@ function deljob(){
 function echo_page_block(){
 	global $limit;
 	global $page;
-	$retstr = '';
 	$obj = new cprefecture();
 	$allcount = $obj->get_all_count(false);
 	$ctl = new cpager($_SERVER['PHP_SELF'],$allcount,$limit);

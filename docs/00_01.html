@@ -97,7 +97,7 @@ class cprefecture extends crecord {
     //--------------------------------------------------------------------------------------
     public function get_all_prep($debug,$from,$limit){
         $arr = array();
-        $query = "
+        $query = &lt;&lt;&lt; END_BLOCK
 select
 *
 from
@@ -107,7 +107,7 @@ where
 order by
 prefecture_id asc
 limit ?, ?
-";
+END_BLOCK;
         $prep_arr = array($from,$limit);
         //親クラスのselect_query()メンバ関数を呼ぶ
         $this->select_query(
@@ -159,14 +159,14 @@ limit ?, ?
             //falseを返す
             return false;
         }
-        $query = "
+        $query = &lt;&lt;&lt; END_BLOCK
 select
 *
 from
 prefecture
 where
 prefecture_id = ?
-";
+END_BLOCK;
         $prep_arr = array($id);
         //親クラスのselect_query()メンバ関数を呼ぶ
         $this->select_query(
@@ -237,17 +237,16 @@ prefecture_id = ?
     @param[in]  $where 条件文（省略可）
     @param[in]  $orderby ならび順（省略可）
     @param[in]  $limit 抽出範囲（省略可）
-    @param[in]  $values SQLにはバインド用の値が入っている前提(SQLで「?」に対応する、1次元配列)
     @return 成功すればtrue
     */
     //--------------------------------------------------------------------------------------
-    public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = '',$values = array()){
+    public function select($debug,$columns,$table,$where = '1',$orderby = '',$limit = ''){
         global $DB_PDO;
         $this->free_res();
         if($orderby != ""){
             $orderby = "order by " . $orderby;
         }
-        $this->retarr['sql'] =&lt;&lt;&lt; END_BLOCK
+        <span class="red">$this->retarr['sql'] =&lt;&lt;&lt; END_BLOCK
 select
 {$columns} 
 from
@@ -256,9 +255,9 @@ where
 {$where}
 {$orderby}
 {$limit}
-END_BLOCK;
-        //親クラスのcrecord_core_pres関数を呼ぶ
-        $ret =  $this->crecord_core_pres($values);
+END_BLOCK;</span>
+        //親クラスのcrecord_core_pres関数を呼ぶ(値は渡さない)
+        $ret =  $this->crecord_core_pres(array());
         if($debug){
             echo '&lt;br />[sql debug]&lt;br />';
             $this->res->debugDumpParams();
@@ -317,6 +316,7 @@ where
 </pre>
 </div>
 　となります。<strong>count(*)</strong>は、SQLの総数を返す内部コマンドです。<br />
+　また<strong>select関数</strong>が呼び出す<strong>$this->crecord_core_pres(array());</strong>の<strong>array()</strong>は<strong>プリペアードステートメント</strong>を<strong>使わない</strong>呼び出し方となります。<strong>プリペアードステートメント</strong>を使う場合は、のちに説明する<strong>select_query関数</strong>を使ってください。
 <br />
 <h4>SELECT文を発行する</h4>
 　このように<strong>$this->select(...);</strong>を実行することによりSQL文が発行されます。正常にリソースが取得できると、
@@ -350,17 +350,140 @@ where
     */
     //--------------------------------------------------------------------------------------
     public function get_all($debug,$from,$limit){
-
-    //以下略
+        $arr = array();
+        //親クラスのselect()メンバ関数を呼ぶ
+        $this->select(
+            $debug,         //デバッグ表示するかどうか
+            "*",            //取得するカラム
+            "prefecture",   //取得するテーブル
+            "1",            //条件
+            "prefecture_id asc",    //並び替え
+            "limit " . $from . "," . $limit     //抽出開始行と抽出数
+        );
+        //順次取り出す
+        while($row = $this->fetch_assoc()){
+            $arr[] = $row;
+        }
+        //取得した配列を返す
+        return $arr;
+    }
 </pre>
 </div>
 　このようなパラメータになっています。<strong>$from</strong>と<strong>$limit</strong>を受け取ります。この値を設定するのは<strong>一覧ページ</strong>である<strong>prefecture_list.php</strong>で行いますので、<strong>ページ分け</strong>については、一覧ページの説明で行います。<br />
 　ここでは<strong>cprefecture::get_all()関数</strong>は<strong>$from</strong>と<strong>$limit</strong>を受け取るように作成しておく、ということだけ確認しておいてください。<br />
-　なお<strong>cprefecture::get_all()関数</strong>は2次元配列を返します。受け取ったほうはその2次元配列をもとに<strong>HTML</strong>に書式化してechoする形になります。<br />
+　なお<strong>cprefecture::get_all()関数</strong>は2次元配列を返します。<strong>cprefecture::get_all_count()関数</strong>の形とは違います。受け取ったほうはその2次元配列をもとに<strong>HTML</strong>に書式化してechoする形になります。<br />
+<div class="box1">
+<pre>
+        //順次取り出す
+        while($row = $this->fetch_assoc()){
+            $arr[] = $row;
+        }
+</pre>
+</div>
+　の部分で２次元配列を作成しています。<br />
+<br />
+<h4>プリペアードステートメントの使用</h4>
+　<strong>PHPBase</strong>は<strong>PDOのプリペアードステートメント</strong>も使えます。使用するには<strong>get_all_prep関数</strong>にように記述するのがいいでしょう。
+<div class="box1">
+<pre>
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定された範囲の配列を得る（プレースホルダつき版）
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $from   抽出開始行
+    @param[in]  $limit  抽出数
+    @return 配列（2次元配列になる）
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all_prep($debug,$from,$limit){
+        $arr = array();
+        $query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+prefecture
+where
+1
+order by
+prefecture_id asc
+limit <span class="red">?, ?</span>
+END_BLOCK;
+        $prep_arr = array($from,$limit);
+        //親クラスのselect_query()メンバ関数を呼ぶ
+        $this->select_query(
+            $debug,         //デバッグ表示するかどうか
+            $query,         //プレースホルダつきSQL
+            $prep_arr       //データの配列
+        );
+        //順次取り出す
+        while($row = $this->fetch_assoc()){
+            $arr[] = $row;
+        }
+        //取得した配列を返す
+        return $arr;
+    }
+</pre>
+</div>
+　ここでは<strong>SELECT文</strong>をすべて記述しています。赤くなってるところが<strong>プレースホルダ</strong>の指定です。<strong>?</strong>を使う形で記述します。そして
+<div class="box1">
+<pre>
+        $prep_arr = array($from,$limit);
+</pre>
+</div>
+　と値の配列を作り出し、
+<div class="box1">
+<pre>
+        $this->select_query(
+            $debug,         //デバッグ表示するかどうか
+            $query,         //プレースホルダつきSQL
+            $prep_arr       //データの配列
+        );
+</pre>
+</div>
+　と、親クラスの<strong>select_query関数</strong>を呼び出します。<strong>select_query関数</strong>は<strong>SQL文をすべて記述</strong>して呼び出します。必要であればその中に<strong>?</strong>を使う<strong>プレースホルダ</strong>も記述し、値の配列を渡します。<strong>プレースホルダ</strong>を使わない場合は
+<div class="box1">
+<pre>
+    //--------------------------------------------------------------------------------------
+    /*!
+    @brief  指定された範囲の配列を得る（プレースホルダつき版）
+    @param[in]  $debug  デバッグ出力をするかどうか
+    @param[in]  $from   抽出開始行
+    @param[in]  $limit  抽出数
+    @return 配列（2次元配列になる）
+    */
+    //--------------------------------------------------------------------------------------
+    public function get_all_prep($debug,$from,$limit){
+        $arr = array();
+        $query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+prefecture
+where
+1
+order by
+prefecture_id asc
+limit <span class="red">{$from}, {$limit}</span>
+END_BLOCK;
+        //親クラスのselect_query()メンバ関数を呼ぶ
+        $this->select_query(
+            $debug,         //デバッグ表示するかどうか
+            $query          //プレースホルダつきSQL
+        );
+        //順次取り出す
+        while($row = $this->fetch_assoc()){
+            $arr[] = $row;
+        }
+        //取得した配列を返す
+        return $arr;
+    }
+</pre>
+</div>
+　のように記述しても大丈夫です。<br />
 <br />
 <h4>詳細表示用のメンバ関数</h4>
 　<strong>詳細表示</strong>用のメンバ関数は<strong>詳細ページ（prefecture_detail.php）</strong>で使用しする<strong>cprefecture::get_tgt()関数</strong>になります。この関数はパラメータに<strong>プライマリキー（prefecture_id）</strong>を渡します。SELECT文を発行する前に、パラメータの有効性（数字でなおかつ1以上かどうか）をチェックしています。<br />
-　このチェックに使っている<strong>cutil::is_number()関数</strong>はスタティック関数で<strong>common/function.php</strong>に実体があります。<strong>cutilクラス</strong>にはほかにもユーティリティ的に使用できる、スタティック関数がありますので、目を通しておくとよいでしょう。<br />
+　このチェックに使っている<strong>is_int()関数</strong>は<strong>整数かどうか</strong>を判別する関数です。
 <br />
 <h4>PHPBaseの考え方</h4>
 　以上、ざっとですが<strong>コンテンツDBクラス</strong>である<strong>cprefectureクラス</strong>について説明しました。<br />
