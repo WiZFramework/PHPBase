@@ -409,7 +409,7 @@ function set_func_form(fn,pm){
 <h2>メンバー詳細</h2>
 </div>
 <!-- コンテンツ　-->
-<div id="inquiry">
+<div id="contents">
 <?php echo_err_flag(); ?>
 
 <form name="form1" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" >

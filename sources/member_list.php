@@ -234,7 +234,7 @@ function del_func_form(pm,mess){
 <h2>メンバー一覧</h2>
 </div>
 <!-- コンテンツ　-->
-<div id="inquiry">
+<div id="contents">
 <?php echo $ERR_STR; ?>
 <form name="form1" action="<?php echo_tgt_uri(); ?>" method="post" >
 <p><a href="member_detail.php">新規</a></p>

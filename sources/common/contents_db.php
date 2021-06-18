@@ -118,7 +118,7 @@ END_BLOCK;
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt($debug,$id){
-		if(!is_int($id)
+		if(!cutil::is_number($id)
 		||  $id < 1){
 			//falseを返す
 			return false;
@@ -141,7 +141,7 @@ END_BLOCK;
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt_prep($debug,$id){
-		if(!is_int($id)
+		if(!cutil::is_number($id)
 		||  $id < 1){
 			//falseを返す
 			return false;
@@ -301,7 +301,7 @@ class cmember extends crecord {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function get_tgt($debug,$id){
-		if(!is_int($id)
+		if(!cutil::is_number($id)
 		||  $id < 1){
 			//falseを返す
 			return false;

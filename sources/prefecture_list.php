@@ -22,7 +22,7 @@ $page = 1;
 //もしページが指定されていたら
 if(isset($_GET['page']) 
     //なおかつ、数字だったら
-    && is_int($_GET['page'])
+    && cutil::is_number($_GET['page'])
     //なおかつ、0より大きかったら
     && $_GET['page'] > 0){
     //パラメータを設定
@@ -91,7 +91,7 @@ function is_func_active(){
 function param_chk(){
 	 global $ERR_STR;
 	if(!isset($_POST['param']) 
-	|| !is_int($_POST['param'])
+	|| !cutil::is_number($_POST['param'])
 	|| $_POST['param'] <= 0){
 		$ERR_STR .= "パラメータを取得できませんでした\n";
 		return false;
